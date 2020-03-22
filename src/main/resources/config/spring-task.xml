@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans	http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
+
+	<context:component-scan base-package="com.yxsd.kanshu.task"  />
+
+	<bean id="doScheduler1"
+		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<ref local="checkExpireTime" />
+			</list>
+		</property>
+	</bean>
+
+	<!-- 时间大小由小到大排列，从秒开始，顺序为 秒，分，时，天，月，年  *为任意 ？为无限制。 -->
+	<bean id="checkExpireTime" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="checkExpire" />
+		</property>
+		<property name="cronExpression">
+			<value>0 0 7 * * ?</value>
+		</property>
+	</bean>
+	<bean id="checkExpire"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="channelDataTask" />
+		</property>
+		<property name="targetMethod">
+			<value>runChannelData</value>
+		</property>
+	</bean>
+
+	<!-- ###################################################################################-->
+
+</beans>
