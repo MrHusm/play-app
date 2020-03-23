@@ -18,7 +18,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.multiaction.NoSuchRequestHandlingMethodException;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import java.io.IOException;
+import java.util.Set;
 
 /**
  * 异常增强，以JSON的形式返回给客服端
@@ -207,16 +210,16 @@ public class ExceptionConfiguration {
     /**
      * Violation异常
      */
-//    @ResponseBody
-//    @ExceptionHandler({ConstraintViolationException.class})
-//    public ResultResponse rpcException(ConstraintViolationException ex) {
-//        Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
-//        String message = "";
-//        for (ConstraintViolation<?> item : violations) {
-//            message += item.getMessage();
-//        }
-//        return resultResponse.failure(ResultMessage.F4080, message);
-//    }
+    @ResponseBody
+    @ExceptionHandler({ConstraintViolationException.class})
+    public ResultResponse rpcException(ConstraintViolationException ex) {
+        Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
+        String message = "";
+        for (ConstraintViolation<?> item : violations) {
+            message += item.getMessage();
+        }
+        return resultResponse.failure(ResultMessage.F4080, message);
+    }
 
     /**
      * Service自定义异常
