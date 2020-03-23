@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotBlank;
 import java.util.Date;
 
 /**
@@ -38,12 +39,10 @@ public class UserController extends BaseController {
 
     /**
      * 手机号登录
-     * @param response
-     * @param request
      */
     @ResponseBody
     @RequestMapping("/loginByMobile")
-    public ResultResponse loginByMobile(HttpServletResponse response, HttpServletRequest request) {
+    public ResultResponse loginByMobile(@NotBlank String token) {
         User user = new User();
         user.setName("我的");
         user.setCreateDate(new Date());
@@ -55,7 +54,7 @@ public class UserController extends BaseController {
      * 用户详情
      */
     @RequestMapping("/info")
-    public String info(HttpServletResponse response, HttpServletRequest request, Model model) throws ServiceException {
+    public String info(@NotBlank String token, Model model) throws ServiceException {
         User user = new User();
         user.setName("我的");
         user.setCreateDate(new Date());
