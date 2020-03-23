@@ -1,19 +1,13 @@
 package com.play.base.controller;
 
-import com.alibaba.fastjson.JSON;
-import com.play.base.utils.AppUtil;
 import com.play.base.utils.ResultResponse;
 import org.apache.commons.lang.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Enumeration;
@@ -23,42 +17,6 @@ import java.util.Map;
 public class BaseController{
 
 	protected ResultResponse resultResponse = new ResultResponse();
-
-	protected void send(ResultResponse resultResponse) {
-		try {
-			HttpServletResponse response = getResponse();
-			String json = JSON.toJSONString(resultResponse);
-			response.setContentType("application/json;charset=utf-8");
-			response.setCharacterEncoding("UTF-8");
-			response.setHeader("Cache-Control", "no-cache");
-			response.setHeader("Content-Length", String.valueOf(json.getBytes("utf-8").length));
-			PrintWriter writer = response.getWriter();
-			writer.write(json);
-			writer.flush();
-			writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	protected HttpServletRequest getRequest() {
-		return AppUtil.getRequest();
-	}
-
-	protected HttpServletResponse getResponse() {
-		return AppUtil.getResponse();
-	}
-
-	protected HttpSession getSession() {
-		return AppUtil.getSession();
-	}
-	
-	/**
-	 * 绛変环浜巖equest.setAttribute(key, value).
-	 */
-	protected void put(final String key, final Object value) {
-		getRequest().setAttribute(key, value);
-	}
 
 	/**
 	 * 

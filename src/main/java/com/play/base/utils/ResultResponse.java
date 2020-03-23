@@ -1,12 +1,12 @@
 package com.play.base.utils;
 
-
-
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.play.base.exception.ServiceException;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResultResponse {
 	private ResultResponse.Meta meta;
 	private Object data;

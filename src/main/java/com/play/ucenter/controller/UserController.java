@@ -1,17 +1,23 @@
 package com.play.ucenter.controller;
 
 import com.play.base.controller.BaseController;
+import com.play.base.exception.ServiceException;
+import com.play.base.utils.ResultMessage;
+import com.play.base.utils.ResultResponse;
+import com.play.ucenter.model.User;
 import com.play.ucenter.service.IUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
 
 /**
  * @author hushengmeng
@@ -27,17 +33,35 @@ public class UserController extends BaseController {
     @Resource
     IUserService userService;
 
-    @Resource(name = "redisTemplate")
-    private RedisTemplate redisTemplate;
+//    @Resource(name = "redisTemplate")
+//    private RedisTemplate redisTemplate;
 
     /**
      * 手机号登录
      * @param response
      * @param request
      */
-    @RequestMapping("loginByMobile")
-    public void loginByMobile(HttpServletResponse response, HttpServletRequest request) {
-        send(resultResponse.success());
+    @ResponseBody
+    @RequestMapping("/loginByMobile")
+    public ResultResponse loginByMobile(HttpServletResponse response, HttpServletRequest request) {
+        User user = new User();
+        user.setName("我的");
+        user.setCreateDate(new Date());
+        return resultResponse.success(user);
+    }
+
+
+    /**
+     * 用户详情
+     */
+    @RequestMapping("/info")
+    public String info(HttpServletResponse response, HttpServletRequest request, Model model) throws ServiceException {
+        User user = new User();
+        user.setName("我的");
+        user.setCreateDate(new Date());
+        model.addAttribute("user", user);
+        throw new ServiceException(ResultMessage.F4006);
+//        return "ucenter/info";
     }
 
 }

@@ -1,8 +1,11 @@
 package com.play.ucenter.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.io.Serializable;
 import java.util.Date;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class User implements Serializable{
     private static final long serialVersionUID = 1L;
 
@@ -31,7 +34,7 @@ public class User implements Serializable{
     /**
      * 渠道列表
      */
-   private String channels;
+    private String channels;
 
     private String createDateStart;
 
