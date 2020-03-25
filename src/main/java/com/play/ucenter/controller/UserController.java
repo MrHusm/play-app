@@ -11,9 +11,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -35,6 +33,31 @@ public class UserController extends BaseController {
 
 //    @Resource(name = "redisTemplate")
 //    private RedisTemplate redisTemplate;
+
+    /**
+     * 用户退出账号
+     *
+     * @param token
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = "/logout", method = {RequestMethod.POST})
+    public ResultResponse logout(@RequestHeader(value = TOKEN, required = true) String token) throws ServiceException {
+        userService.logout(token);
+        return resultResponse.success();
+    }
+
+    /**
+     * 发送手机号验证码
+     *
+     * @param mobile
+     * @return
+     */
+    @RequestMapping(value = "/mobile/code")
+    public ResultResponse code(@RequestParam(required = true) String mobile) {
+        userService.sendMobileCode(mobile);
+        return resultResponse.success();
+    }
 
     /**
      * 手机号登录

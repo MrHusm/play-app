@@ -16,6 +16,8 @@ import java.util.Map;
 
 public class BaseController{
 
+	protected static final String TOKEN = "token";
+
 	protected ResultResponse resultResponse = new ResultResponse();
 
 	/**
