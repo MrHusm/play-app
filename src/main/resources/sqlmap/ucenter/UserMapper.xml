@@ -1,148 +1,352 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="UserMapper">
-    <resultMap id="BaseResultMap" type="com.play.ucenter.model.User">
-        <id column="user_id" property="userId" jdbcType="BIGINT" />
-        <result column="name" property="name" jdbcType="VARCHAR" />
+<mapper namespace="com.play.ucenter.model.UserMapper" >
+    <resultMap id="BaseResultMap" type="com.play.ucenter.model.User" >
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="user_id" property="userId" jdbcType="BIGINT" />
+        <result column="pretty_id" property="prettyId" jdbcType="BIGINT" />
+        <result column="nick_name" property="nickName" jdbcType="VARCHAR" />
+        <result column="mobile" property="mobile" jdbcType="VARCHAR" />
+        <result column="pwd" property="pwd" jdbcType="VARCHAR" />
+        <result column="head_url" property="headUrl" jdbcType="VARCHAR" />
+        <result column="headwear_url" property="headwearUrl" jdbcType="VARCHAR" />
+        <result column="sex" property="sex" jdbcType="TINYINT" />
+        <result column="birthday" property="birthday" jdbcType="DATE" />
+        <result column="province" property="province" jdbcType="VARCHAR" />
+        <result column="city" property="city" jdbcType="VARCHAR" />
+        <result column="motto" property="motto" jdbcType="VARCHAR" />
+        <result column="vip_level" property="vipLevel" jdbcType="TINYINT" />
+        <result column="vip_exp" property="vipExp" jdbcType="INTEGER" />
+        <result column="freeze" property="freeze" jdbcType="BIT" />
+        <result column="freeze_expire_time" property="freezeExpireTime" jdbcType="TIMESTAMP" />
+        <result column="app_version" property="appVersion" jdbcType="VARCHAR" />
+        <result column="device_type" property="deviceType" jdbcType="TINYINT" />
+        <result column="device_imei" property="deviceImei" jdbcType="VARCHAR" />
+        <result column="device_name" property="deviceName" jdbcType="VARCHAR" />
+        <result column="bundle_id" property="bundleId" jdbcType="VARCHAR" />
+        <result column="os_version" property="osVersion" jdbcType="VARCHAR" />
+        <result column="channel" property="channel" jdbcType="INTEGER" />
+        <result column="deleted" property="deleted" jdbcType="BIT" />
+        <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
+        <result column="update_date" property="updateDate" jdbcType="TIMESTAMP" />
     </resultMap>
     <sql id="Base_Where">
         <if test="userId != null"> and user_id= #{userId}</if>
-        <if test="name != null and name !=''"> and name= #{name}</if>
-        <if test="nickName != null and nickName !=''"> and nick_name= #{nickName}</if>
-        <if test="password != null and password !=''"> and password= #{password}</if>
-        <if test="sex != null"> and sex= #{sex}</if>
-        <if test="channel != null"> and channel= #{channel}</if>
-        <if test="channelNow != null"> and channel_now= #{channelNow}</if>
-        <if test="email != null and email !=''"> and email= #{email}</if>
-        <if test="tel != null and tel !=''"> and tel= #{tel}</if>
-        <if test="deviceSerialNo != null and deviceSerialNo !=''"> and device_serial_no= #{deviceSerialNo}</if>
-        <if test="deviceType != null and deviceType !=''"> and device_type= #{deviceType}</if>
+        <if test="mobile != null and mobile !=''"> and mobile= #{mobile}</if>
     </sql>
-    <sql id="Base_Column_List">
-        user_id ,`name`,nick_name,password,logo,sex,channel,channel_now,email,tel,device_serial_no,device_type,create_date,update_date
+    <sql id="Base_Column_List" >
+        id, user_id, pretty_id, nick_name, mobile, pwd, head_url, headwear_url, sex, birthday,
+        province, city, motto, vip_level, vip_exp, freeze, freeze_expire_time, app_version,
+        device_type, device_imei, device_name, bundle_id, os_version, channel, deleted, create_date,
+        update_date
     </sql>
-
-    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
-        select <include refid="Base_Column_List" />
-        from user where user_id = #{id,jdbcType=BIGINT}
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+        select
+        <include refid="Base_Column_List" />
+        from user_info
+        where id = #{id,jdbcType=BIGINT}
     </select>
-
-    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
-        delete from user where
-        user_id = #{id,jdbcType=BIGINT}
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+        delete from user_info
+        where id = #{id,jdbcType=BIGINT}
     </delete>
-
-    <insert id="insertSelective" useGeneratedKeys="true" keyProperty="userId" parameterType="com.play.ucenter.model.User">
-        insert into user
-        <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="userId != null">user_id,</if>
-            <if test="name != null and name !=''">`name`,</if>
-            <if test="password != null and password !=''">password,</if>
-            <if test="nickName != null and nickName !=''">nick_name,</if>
-            <if test="logo != null and logo !=''">logo,</if>
-            <if test="sex != null">sex,</if>
-            <if test="channel != null">channel,</if>
-            <if test="channelNow != null">channel_now,</if>
-            <if test="email != null and email !=''">email,</if>
-            <if test="tel != null and tel !=''">tel,</if>
-            <if test="deviceSerialNo != null and deviceSerialNo !=''">device_serial_no,</if>
-            <if test="deviceType != null and deviceType !=''">device_type,</if>
-            <if test="createDate != null">create_date,</if>
-            <if test="updateDate != null">update_date,</if>
+    <insert id="insert" parameterType="com.play.ucenter.model.User" >
+        insert into user_info (user_id, pretty_id, nick_name,
+        mobile, pwd, head_url,
+        headwear_url, sex, birthday,
+        province, city, motto,
+        vip_level, vip_exp, freeze,
+        freeze_expire_time, app_version, device_type,
+        device_imei, device_name, bundle_id,
+        os_version, channel, deleted,
+        create_date, update_date)
+        values (#{userId,jdbcType=BIGINT}, #{prettyId,jdbcType=BIGINT}, #{nickName,jdbcType=VARCHAR},
+        #{mobile,jdbcType=VARCHAR}, #{pwd,jdbcType=VARCHAR}, #{headUrl,jdbcType=VARCHAR},
+        #{headwearUrl,jdbcType=VARCHAR}, #{sex,jdbcType=TINYINT}, #{birthday,jdbcType=DATE},
+        #{province,jdbcType=VARCHAR}, #{city,jdbcType=VARCHAR}, #{motto,jdbcType=VARCHAR},
+        #{vipLevel,jdbcType=TINYINT}, #{vipExp,jdbcType=INTEGER}, #{freeze,jdbcType=BIT},
+        #{freezeExpireTime,jdbcType=TIMESTAMP}, #{appVersion,jdbcType=VARCHAR}, #{deviceType,jdbcType=TINYINT},
+        #{deviceImei,jdbcType=VARCHAR}, #{deviceName,jdbcType=VARCHAR}, #{bundleId,jdbcType=VARCHAR},
+        #{osVersion,jdbcType=VARCHAR}, #{channel,jdbcType=INTEGER}, #{deleted,jdbcType=BIT},
+        #{createDate,jdbcType=TIMESTAMP}, #{updateDate,jdbcType=TIMESTAMP})
+    </insert>
+    <insert id="insertSelective" parameterType="com.play.ucenter.model.User">
+        insert into user_info
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="userId != null" >
+                user_id,
+            </if>
+            <if test="prettyId != null" >
+                pretty_id,
+            </if>
+            <if test="nickName != null" >
+                nick_name,
+            </if>
+            <if test="mobile != null" >
+                mobile,
+            </if>
+            <if test="pwd != null" >
+                pwd,
+            </if>
+            <if test="headUrl != null" >
+                head_url,
+            </if>
+            <if test="headwearUrl != null" >
+                headwear_url,
+            </if>
+            <if test="sex != null" >
+                sex,
+            </if>
+            <if test="birthday != null" >
+                birthday,
+            </if>
+            <if test="province != null" >
+                province,
+            </if>
+            <if test="city != null" >
+                city,
+            </if>
+            <if test="motto != null" >
+                motto,
+            </if>
+            <if test="vipLevel != null" >
+                vip_level,
+            </if>
+            <if test="vipExp != null" >
+                vip_exp,
+            </if>
+            <if test="freeze != null" >
+                freeze,
+            </if>
+            <if test="freezeExpireTime != null" >
+                freeze_expire_time,
+            </if>
+            <if test="appVersion != null" >
+                app_version,
+            </if>
+            <if test="deviceType != null" >
+                device_type,
+            </if>
+            <if test="deviceImei != null" >
+                device_imei,
+            </if>
+            <if test="deviceName != null" >
+                device_name,
+            </if>
+            <if test="bundleId != null" >
+                bundle_id,
+            </if>
+            <if test="osVersion != null" >
+                os_version,
+            </if>
+            <if test="channel != null" >
+                channel,
+            </if>
+            <if test="deleted != null" >
+                deleted,
+            </if>
+            <if test="createDate != null" >
+                create_date,
+            </if>
+            <if test="updateDate != null" >
+                update_date,
+            </if>
         </trim>
-        <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="userId != null">
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="userId != null" >
                 #{userId,jdbcType=BIGINT},
             </if>
-            <if test="name != null and name !=''">
-                #{name,jdbcType=VARCHAR},
+            <if test="prettyId != null" >
+                #{prettyId,jdbcType=BIGINT},
             </if>
-            <if test="password != null and password !=''">
-                #{password,jdbcType=VARCHAR},
-            </if>
-            <if test="nickName != null and nickName !=''">
+            <if test="nickName != null" >
                 #{nickName,jdbcType=VARCHAR},
             </if>
-            <if test="logo != null and logo !=''">
-                #{logo,jdbcType=VARCHAR},
+            <if test="mobile != null" >
+                #{mobile,jdbcType=VARCHAR},
             </if>
-            <if test="sex != null">
-                #{sex,jdbcType=INTEGER},
+            <if test="pwd != null" >
+                #{pwd,jdbcType=VARCHAR},
             </if>
-            <if test="channel != null">
+            <if test="headUrl != null" >
+                #{headUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="headwearUrl != null" >
+                #{headwearUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="sex != null" >
+                #{sex,jdbcType=TINYINT},
+            </if>
+            <if test="birthday != null" >
+                #{birthday,jdbcType=DATE},
+            </if>
+            <if test="province != null" >
+                #{province,jdbcType=VARCHAR},
+            </if>
+            <if test="city != null" >
+                #{city,jdbcType=VARCHAR},
+            </if>
+            <if test="motto != null" >
+                #{motto,jdbcType=VARCHAR},
+            </if>
+            <if test="vipLevel != null" >
+                #{vipLevel,jdbcType=TINYINT},
+            </if>
+            <if test="vipExp != null" >
+                #{vipExp,jdbcType=INTEGER},
+            </if>
+            <if test="freeze != null" >
+                #{freeze,jdbcType=BIT},
+            </if>
+            <if test="freezeExpireTime != null" >
+                #{freezeExpireTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="appVersion != null" >
+                #{appVersion,jdbcType=VARCHAR},
+            </if>
+            <if test="deviceType != null" >
+                #{deviceType,jdbcType=TINYINT},
+            </if>
+            <if test="deviceImei != null" >
+                #{deviceImei,jdbcType=VARCHAR},
+            </if>
+            <if test="deviceName != null" >
+                #{deviceName,jdbcType=VARCHAR},
+            </if>
+            <if test="bundleId != null" >
+                #{bundleId,jdbcType=VARCHAR},
+            </if>
+            <if test="osVersion != null" >
+                #{osVersion,jdbcType=VARCHAR},
+            </if>
+            <if test="channel != null" >
                 #{channel,jdbcType=INTEGER},
             </if>
-            <if test="channelNow != null">
-                #{channelNow,jdbcType=INTEGER},
+            <if test="deleted != null" >
+                #{deleted,jdbcType=BIT},
             </if>
-            <if test="email != null and email !=''">
-                #{email,jdbcType=VARCHAR},
-            </if>
-            <if test="tel != null and tel !=''">
-                #{tel,jdbcType=VARCHAR},
-            </if>
-            <if test="deviceSerialNo != null and deviceSerialNo !=''">
-                #{deviceSerialNo,jdbcType=VARCHAR},
-            </if>
-            <if test="deviceType != null and deviceType !=''">
-                #{deviceType,jdbcType=VARCHAR},
-            </if>
-            <if test="createDate != null">
+            <if test="createDate != null" >
                 #{createDate,jdbcType=TIMESTAMP},
             </if>
-            <if test="updateDate != null">
+            <if test="updateDate != null" >
                 #{updateDate,jdbcType=TIMESTAMP},
             </if>
         </trim>
     </insert>
-
-    <update id="updateByPrimaryKeySelective" parameterType="com.play.ucenter.model.User">
-        update user
-        <set>
-            <if test="name != null and name !=''">
-                `name`= #{name,jdbcType=VARCHAR},
+    <update id="updateByPrimaryKeySelective" parameterType="com.play.ucenter.model.User" >
+        update user_info
+        <set >
+            <if test="userId != null" >
+                user_id = #{userId,jdbcType=BIGINT},
             </if>
-            <if test="password != null and password !=''">
-                password= #{password,jdbcType=VARCHAR},
+            <if test="prettyId != null" >
+                pretty_id = #{prettyId,jdbcType=BIGINT},
             </if>
-            <if test="nickName != null and nickName !=''">
-                nick_name= #{nickName,jdbcType=VARCHAR},
+            <if test="nickName != null" >
+                nick_name = #{nickName,jdbcType=VARCHAR},
             </if>
-            <if test="logo != null and logo !=''">
-                logo= #{logo,jdbcType=VARCHAR},
+            <if test="mobile != null" >
+                mobile = #{mobile,jdbcType=VARCHAR},
             </if>
-            <if test="sex != null">
-                sex= #{sex,jdbcType=INTEGER},
+            <if test="pwd != null" >
+                pwd = #{pwd,jdbcType=VARCHAR},
             </if>
-            <if test="channel != null">
-                channel= #{channel,jdbcType=INTEGER},
+            <if test="headUrl != null" >
+                head_url = #{headUrl,jdbcType=VARCHAR},
             </if>
-            <if test="channelNow != null">
-                channel_now = #{channelNow,jdbcType=INTEGER},
+            <if test="headwearUrl != null" >
+                headwear_url = #{headwearUrl,jdbcType=VARCHAR},
             </if>
-            <if test="email != null and email !=''">
-                email= #{email,jdbcType=VARCHAR},
+            <if test="sex != null" >
+                sex = #{sex,jdbcType=TINYINT},
             </if>
-            <if test="tel != null and tel !=''">
-                tel= #{tel,jdbcType=VARCHAR},
+            <if test="birthday != null" >
+                birthday = #{birthday,jdbcType=DATE},
             </if>
-            <if test="deviceSerialNo != null and deviceSerialNo !=''">
-                device_serial_no = #{deviceSerialNo,jdbcType=VARCHAR},
+            <if test="province != null" >
+                province = #{province,jdbcType=VARCHAR},
             </if>
-            <if test="deviceType != null and deviceType !=''">
-                device_type = #{deviceType,jdbcType=VARCHAR},
+            <if test="city != null" >
+                city = #{city,jdbcType=VARCHAR},
             </if>
-            <if test="createDate != null">
-                create_date= #{createDate,jdbcType=TIMESTAMP},
+            <if test="motto != null" >
+                motto = #{motto,jdbcType=VARCHAR},
             </if>
-            <if test="updateDate != null">
-                update_date= #{updateDate,jdbcType=TIMESTAMP},
+            <if test="vipLevel != null" >
+                vip_level = #{vipLevel,jdbcType=TINYINT},
+            </if>
+            <if test="vipExp != null" >
+                vip_exp = #{vipExp,jdbcType=INTEGER},
+            </if>
+            <if test="freeze != null" >
+                freeze = #{freeze,jdbcType=BIT},
+            </if>
+            <if test="freezeExpireTime != null" >
+                freeze_expire_time = #{freezeExpireTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="appVersion != null" >
+                app_version = #{appVersion,jdbcType=VARCHAR},
+            </if>
+            <if test="deviceType != null" >
+                device_type = #{deviceType,jdbcType=TINYINT},
+            </if>
+            <if test="deviceImei != null" >
+                device_imei = #{deviceImei,jdbcType=VARCHAR},
+            </if>
+            <if test="deviceName != null" >
+                device_name = #{deviceName,jdbcType=VARCHAR},
+            </if>
+            <if test="bundleId != null" >
+                bundle_id = #{bundleId,jdbcType=VARCHAR},
+            </if>
+            <if test="osVersion != null" >
+                os_version = #{osVersion,jdbcType=VARCHAR},
+            </if>
+            <if test="channel != null" >
+                channel = #{channel,jdbcType=INTEGER},
+            </if>
+            <if test="deleted != null" >
+                deleted = #{deleted,jdbcType=BIT},
+            </if>
+            <if test="createDate != null" >
+                create_date = #{createDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateDate != null" >
+                update_date = #{updateDate,jdbcType=TIMESTAMP},
             </if>
         </set>
-        where
-        user_id = #{userId,jdbcType=BIGINT}
+        where id = #{id,jdbcType=BIGINT}
     </update>
-
+    <update id="updateByPrimaryKey" parameterType="com.play.ucenter.model.User" >
+        update user_info
+        set user_id = #{userId,jdbcType=BIGINT},
+        pretty_id = #{prettyId,jdbcType=BIGINT},
+        nick_name = #{nickName,jdbcType=VARCHAR},
+        mobile = #{mobile,jdbcType=VARCHAR},
+        pwd = #{pwd,jdbcType=VARCHAR},
+        head_url = #{headUrl,jdbcType=VARCHAR},
+        headwear_url = #{headwearUrl,jdbcType=VARCHAR},
+        sex = #{sex,jdbcType=TINYINT},
+        birthday = #{birthday,jdbcType=DATE},
+        province = #{province,jdbcType=VARCHAR},
+        city = #{city,jdbcType=VARCHAR},
+        motto = #{motto,jdbcType=VARCHAR},
+        vip_level = #{vipLevel,jdbcType=TINYINT},
+        vip_exp = #{vipExp,jdbcType=INTEGER},
+        freeze = #{freeze,jdbcType=BIT},
+        freeze_expire_time = #{freezeExpireTime,jdbcType=TIMESTAMP},
+        app_version = #{appVersion,jdbcType=VARCHAR},
+        device_type = #{deviceType,jdbcType=TINYINT},
+        device_imei = #{deviceImei,jdbcType=VARCHAR},
+        device_name = #{deviceName,jdbcType=VARCHAR},
+        bundle_id = #{bundleId,jdbcType=VARCHAR},
+        os_version = #{osVersion,jdbcType=VARCHAR},
+        channel = #{channel,jdbcType=INTEGER},
+        deleted = #{deleted,jdbcType=BIT},
+        create_date = #{createDate,jdbcType=TIMESTAMP},
+        update_date = #{updateDate,jdbcType=TIMESTAMP}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
 
     <select id="getAll" resultMap="BaseResultMap" parameterType="map">
         select

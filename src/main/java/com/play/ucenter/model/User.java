@@ -11,37 +11,131 @@ public class User implements Serializable{
 
     private Long id;
 
-    /**
-     * 渠道名称
-     */
-    private String name;
+    private Long userId;
 
     /**
-     * 登录名
+     * 靓号
      */
-    private String loginName;
+    private Long prettyId;
 
     /**
-     * 密码
+     * 用户昵称
      */
-    private String password;
+    private String nickName;
 
     /**
-     * 1：管理员 2：非管理员
+     * 手机号
      */
-    private Short adminFlag;
+    private String mobile;
 
     /**
-     * 渠道列表
+     * 登录密码
      */
-    private String channels;
+    private String pwd;
 
-    private String createDateStart;
+    /**
+     * 头像地址
+     */
+    private String headUrl;
 
-    private String createDateEnd;
+    /**
+     * 头像框地址
+     */
+    private String headwearUrl;
 
+    /**
+     * 性别 0：未知 1：男 2：女
+     */
+    private Integer sex;
+
+    /**
+     * 生日
+     */
+    private Date birthday;
+
+    /**
+     * 省
+     */
+    private String province;
+
+    /**
+     * 市
+     */
+    private String city;
+
+    /**
+     * 签名
+     */
+    private String motto;
+
+    /**
+     * vip等级
+     */
+    private Byte vipLevel;
+
+    /**
+     * vip经验
+     */
+    private Integer vipExp;
+
+    /**
+     * 账号状态 0 正常 1 已冻结
+     */
+    private Boolean freeze;
+
+    /**
+     * 冻结结束时间
+     */
+    private Date freezeExpireTime;
+
+    /**
+     * APP版本
+     */
+    private String appVersion;
+
+    /**
+     * 设备类型 0：Android 1：IOS
+     */
+    private Integer deviceType;
+
+    /**
+     * 设备序列号
+     */
+    private String deviceImei;
+
+    /**
+     * 设备名称
+     */
+    private String deviceName;
+
+    /**
+     * bundleId
+     */
+    private String bundleId;
+
+    /**
+     * 系统版本
+     */
+    private String osVersion;
+
+    /**
+     * 渠道
+     */
+    private Integer channel;
+
+    /**
+     * 是否删除 0 删除 1 未删除
+     */
+    private Boolean deleted;
+
+    /**
+     * 注册时间
+     */
     private Date createDate;
 
+    /**
+     * 修改时间
+     */
     private Date updateDate;
 
     public Long getId() {
@@ -52,36 +146,196 @@ public class User implements Serializable{
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
-    public String getLoginName() {
-        return loginName;
+    public Long getPrettyId() {
+        return prettyId;
     }
 
-    public void setLoginName(String loginName) {
-        this.loginName = loginName;
+    public void setPrettyId(Long prettyId) {
+        this.prettyId = prettyId;
     }
 
-    public String getPassword() {
-        return password;
+    public String getNickName() {
+        return nickName;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setNickName(String nickName) {
+        this.nickName = nickName;
     }
 
-    public Short getAdminFlag() {
-        return adminFlag;
+    public String getMobile() {
+        return mobile;
     }
 
-    public void setAdminFlag(Short adminFlag) {
-        this.adminFlag = adminFlag;
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
+
+    public String getPwd() {
+        return pwd;
+    }
+
+    public void setPwd(String pwd) {
+        this.pwd = pwd;
+    }
+
+    public String getHeadUrl() {
+        return headUrl;
+    }
+
+    public void setHeadUrl(String headUrl) {
+        this.headUrl = headUrl;
+    }
+
+    public String getHeadwearUrl() {
+        return headwearUrl;
+    }
+
+    public void setHeadwearUrl(String headwearUrl) {
+        this.headwearUrl = headwearUrl;
+    }
+
+    public Integer getSex() {
+        return sex;
+    }
+
+    public void setSex(Integer sex) {
+        this.sex = sex;
+    }
+
+    public Date getBirthday() {
+        return birthday;
+    }
+
+    public void setBirthday(Date birthday) {
+        this.birthday = birthday;
+    }
+
+    public String getProvince() {
+        return province;
+    }
+
+    public void setProvince(String province) {
+        this.province = province;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getMotto() {
+        return motto;
+    }
+
+    public void setMotto(String motto) {
+        this.motto = motto;
+    }
+
+    public Byte getVipLevel() {
+        return vipLevel;
+    }
+
+    public void setVipLevel(Byte vipLevel) {
+        this.vipLevel = vipLevel;
+    }
+
+    public Integer getVipExp() {
+        return vipExp;
+    }
+
+    public void setVipExp(Integer vipExp) {
+        this.vipExp = vipExp;
+    }
+
+    public Boolean getFreeze() {
+        return freeze;
+    }
+
+    public void setFreeze(Boolean freeze) {
+        this.freeze = freeze;
+    }
+
+    public Date getFreezeExpireTime() {
+        return freezeExpireTime;
+    }
+
+    public void setFreezeExpireTime(Date freezeExpireTime) {
+        this.freezeExpireTime = freezeExpireTime;
+    }
+
+    public String getAppVersion() {
+        return appVersion;
+    }
+
+    public void setAppVersion(String appVersion) {
+        this.appVersion = appVersion;
+    }
+
+    public Integer getDeviceType() {
+        return deviceType;
+    }
+
+    public void setDeviceType(Integer deviceType) {
+        this.deviceType = deviceType;
+    }
+
+    public String getDeviceImei() {
+        return deviceImei;
+    }
+
+    public void setDeviceImei(String deviceImei) {
+        this.deviceImei = deviceImei;
+    }
+
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    public void setDeviceName(String deviceName) {
+        this.deviceName = deviceName;
+    }
+
+    public String getBundleId() {
+        return bundleId;
+    }
+
+    public void setBundleId(String bundleId) {
+        this.bundleId = bundleId;
+    }
+
+    public String getOsVersion() {
+        return osVersion;
+    }
+
+    public void setOsVersion(String osVersion) {
+        this.osVersion = osVersion;
+    }
+
+    public Integer getChannel() {
+        return channel;
+    }
+
+    public void setChannel(Integer channel) {
+        this.channel = channel;
+    }
+
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
     }
 
     public Date getCreateDate() {
@@ -98,30 +352,6 @@ public class User implements Serializable{
 
     public void setUpdateDate(Date updateDate) {
         this.updateDate = updateDate;
-    }
-
-    public String getChannels() {
-        return channels;
-    }
-
-    public void setChannels(String channels) {
-        this.channels = channels;
-    }
-
-    public String getCreateDateStart() {
-        return createDateStart;
-    }
-
-    public void setCreateDateStart(String createDateStart) {
-        this.createDateStart = createDateStart;
-    }
-
-    public String getCreateDateEnd() {
-        return createDateEnd;
-    }
-
-    public void setCreateDateEnd(String createDateEnd) {
-        this.createDateEnd = createDateEnd;
     }
 
 }

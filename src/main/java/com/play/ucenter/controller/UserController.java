@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * @author hushengmeng
@@ -54,22 +55,37 @@ public class UserController extends BaseController {
      * @return
      */
     @RequestMapping(value = "/mobile/code")
-    public ResultResponse code(@RequestParam(required = true) String mobile) {
+    public ResultResponse code(@RequestParam(required = true) String mobile)throws ServiceException {
         userService.sendMobileCode(mobile);
         return resultResponse.success();
     }
 
     /**
      * 手机号登录
+     * @param mobile
+     * @param code
+     * @return
+     * @throws ServiceException
      */
-    @ResponseBody
-    @RequestMapping("/loginByMobile")
-    public ResultResponse loginByMobile(String token) {
-        User user = new User();
-        user.setName("我的");
-        user.setCreateDate(new Date());
-        return resultResponse.success(user);
+    @RequestMapping(value = "/mobile/login")
+    public ResultResponse verifyByMobile(@RequestParam(required = true) String mobile, @RequestParam(required = true) String code,
+                                         @RequestParam(required = true) String appVersion, @RequestParam(required = true) Integer deviceType,
+                                         @RequestParam(required = true) String deviceImei, @RequestParam(required = true) String deviceName,
+                                         @RequestParam(required = true) String bundleId, @RequestParam(required = true) String osVersion,
+                                         @RequestParam(required = true) Integer channel)throws ServiceException {
+        User loginUser = new User();
+        loginUser.setMobile(mobile);
+        loginUser.setAppVersion(appVersion);
+        loginUser.setDeviceType(deviceType);
+        loginUser.setDeviceImei(deviceImei);
+        loginUser.setDeviceName(deviceName);
+        loginUser.setBundleId(bundleId);
+        loginUser.setOsVersion(osVersion);
+        loginUser.setChannel(channel);
+        Map<String,Object> data = userService.loginByMobile(mobile, code, loginUser);
+        return resultResponse.success(data);
     }
+
 
 
     /**
@@ -78,7 +94,6 @@ public class UserController extends BaseController {
     @RequestMapping("/info")
     public String info(@RequestParam(required = true) String token, Model model) throws ServiceException {
         User user = new User();
-        user.setName("我的");
         user.setCreateDate(new Date());
         model.addAttribute("user", user);
         return "ucenter/info";
