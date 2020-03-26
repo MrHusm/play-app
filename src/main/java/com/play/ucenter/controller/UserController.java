@@ -2,9 +2,13 @@ package com.play.ucenter.controller;
 
 import com.play.base.controller.BaseController;
 import com.play.base.exception.ServiceException;
+import com.play.base.utils.DateUtil;
 import com.play.base.utils.ResultResponse;
 import com.play.ucenter.model.User;
+import com.play.ucenter.model.UserAccount;
+import com.play.ucenter.service.IUserAccountService;
 import com.play.ucenter.service.IUserService;
+import com.play.ucenter.view.UserView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,6 +36,9 @@ public class UserController extends BaseController {
 
     @Resource
     IUserService userService;
+
+    @Resource
+    IUserAccountService userAccountService;
 
 //    @Resource(name = "redisTemplate")
 //    private RedisTemplate redisTemplate;
@@ -54,6 +62,7 @@ public class UserController extends BaseController {
      * @param mobile
      * @return
      */
+    @ResponseBody
     @RequestMapping(value = "/mobile/code")
     public ResultResponse code(@RequestParam(required = true) String mobile)throws ServiceException {
         userService.sendMobileCode(mobile);
@@ -67,6 +76,7 @@ public class UserController extends BaseController {
      * @return
      * @throws ServiceException
      */
+    @ResponseBody
     @RequestMapping(value = "/mobile/login")
     public ResultResponse verifyByMobile(@RequestParam(required = true) String mobile, @RequestParam(required = true) String code,
                                          @RequestParam(required = true) String appVersion, @RequestParam(required = true) Integer deviceType,
@@ -86,17 +96,54 @@ public class UserController extends BaseController {
         return resultResponse.success(data);
     }
 
-
+    /**
+     * 修改个人信息
+     * @return
+     * @throws ServiceException
+     */
+    @ResponseBody
+    @RequestMapping(value = "/update", method = RequestMethod.POST)
+    public ResultResponse update(@RequestParam(required = false) String nickName, @RequestParam(required = false) String headUrl,
+                                         @RequestParam(required = false) Integer sex, @RequestParam(required = false) String birthday,
+                                         @RequestParam(required = false) String province, @RequestParam(required = false) String city,
+                                         @RequestParam(required = false) String motto) {
+        Long userId = this.getUserId();
+        User user = new User();
+        user.setUserId(userId);
+        user.setNickName(nickName);
+        user.setHeadUrl(headUrl);
+        user.setSex(sex);
+        user.setBirthday(DateUtil.getDateByFormat(birthday,"yyyy-MM-dd"));
+        user.setProvince(province);
+        user.setCity(city);
+        user.setMotto(motto);
+        userService.updateUser(user);
+        return resultResponse.success();
+    }
 
     /**
-     * 用户详情
+     * 搜索用户
+     *
+     * @param keyword
+     * @return
      */
-    @RequestMapping("/info")
-    public String info(@RequestParam(required = true) String token, Model model) throws ServiceException {
-        User user = new User();
-        user.setCreateDate(new Date());
-        model.addAttribute("user", user);
-        return "ucenter/info";
+    @ResponseBody
+    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    public ResultResponse search(@RequestParam(required = true) String keyword)throws ServiceException {
+        List<UserView> users = userService.search(keyword);
+        return resultResponse.success(users);
+    }
+
+    /**
+     * 我的
+     */
+    @ResponseBody
+    @RequestMapping("/mine")
+    public ResultResponse mine(){
+        Long userId = this.getUserId();
+        User user = this.userService.findUniqueByParams("userId",userId);
+        UserAccount userAccount = userAccountService.getByUserId(userId);
+        return resultResponse.success(user);
     }
 
 }

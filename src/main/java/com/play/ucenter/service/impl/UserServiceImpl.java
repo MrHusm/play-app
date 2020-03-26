@@ -4,13 +4,16 @@ import com.alibaba.fastjson.JSON;
 import com.play.base.dao.IBaseDao;
 import com.play.base.exception.ServiceException;
 import com.play.base.service.impl.BaseServiceImpl;
-import com.play.base.utils.CheckSumBuilder;
-import com.play.base.utils.CommonUtil;
-import com.play.base.utils.ConfigPropertieUtils;
-import com.play.base.utils.ResultCustomMessage;
+import com.play.base.utils.*;
+import com.play.base.utils.BeanUtils;
 import com.play.ucenter.dao.IUserDao;
 import com.play.ucenter.model.User;
+import com.play.ucenter.model.UserAccount;
+import com.play.ucenter.service.IUserAccountService;
 import com.play.ucenter.service.IUserService;
+import com.play.ucenter.view.UserView;
+import org.apache.commons.beanutils.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -28,17 +31,24 @@ import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 /**
- * Created by hushengmeng on 2017/7/4.
+ * Created by hushengmeng on 2020/3/30.
  */
-@Service(value="userCmsService")
+@Service(value="userService")
 public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUserService {
 
     @Resource
-    private IUserDao userCmsDao;
+    private IUserDao userDao;
+
+    private IUserAccountService userAccountService;
 
     @Override
     public IBaseDao<User> getBaseDao() {
-        return userCmsDao;
+        return userDao;
+    }
+
+    @Override
+    public User getByUserId(Long userId) {
+        return this.findUniqueByParams("userId",userId);
     }
 
     @Override
@@ -117,14 +127,19 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
 
             loginUser.setCreateDate(new Date());
             loginUser.setUpdateDate(new Date());
+
+            UserAccount userAccount = new UserAccount();
+            userAccount.setUserId(1L);
+            userAccount.setCreateDate(new Date());
+            userAccount.setUpdateDate(new Date());
             this.save(loginUser);
+            userAccountService.save(userAccount);
         }else{
             data.put("user",user);
             data.put("new",0);
         }
         return data;
     }
-
 
     /**
      * 校验验证码
@@ -192,5 +207,24 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
         }else{
             throw new ServiceException(ResultCustomMessage.F1002,"其他错误");
         }
+    }
+
+    @Override
+    public void updateUser(User user) {
+        this.update(user);
+        if(StringUtils.isNotBlank(user.getHeadUrl())){
+            //同步头像 TODO
+        }
+        //清除缓存
+    }
+
+    @Override
+    public List<UserView> search(String keyword) {
+        List<User> users = this.findListByParams("userId",keyword);
+        if(CollectionUtils.isEmpty(users)){
+            users = this.findListByParams("nickName","%"+ keyword + "%");
+        }
+        List<UserView> userViews = BeanUtils.copyProperties(List.class,users);
+        return userViews;
     }
 }
