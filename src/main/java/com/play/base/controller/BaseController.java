@@ -20,6 +20,11 @@ public class BaseController{
 
 	protected ResultResponse resultResponse = new ResultResponse();
 
+	public Long getUserId(){
+		return 1L;
+	}
+
+
 	/**
 	 * 
 	 * Description: 灏嗕竴涓? JavaBean 瀵硅薄杞寲涓轰竴涓?  Map
