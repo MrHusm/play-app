@@ -6,6 +6,7 @@ import com.play.base.dao.IBaseDao;
 import com.play.base.exception.ServiceException;
 import com.play.base.service.impl.BaseServiceImpl;
 import com.play.base.utils.*;
+import com.play.im.service.impl.RongyunService;
 import com.play.ucenter.dao.IUserDao;
 import com.play.ucenter.model.User;
 import com.play.ucenter.model.UserAccount;
@@ -144,6 +145,7 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
     public Map<String,Object> loginByMobile(String mobile, String code, User loginUser) throws ServiceException{
         verifyCode(mobile,code);
         Map<String,Object> data = new HashMap<String, Object>();
+        UserView userView;
         User user =  this.findUniqueByParams("mobile", mobile);
         if(user == null){
             //注册账号 TODO
@@ -151,6 +153,8 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
             loginUser.setUserId(1L);
             loginUser.setPrettyId(1L);
             loginUser.setPwd("1");
+            loginUser.setHeadUrl("http://url");
+            loginUser.setPendHeadUrl("http://url");
 
             loginUser.setCreateDate(new Date());
             loginUser.setUpdateDate(new Date());
@@ -161,10 +165,20 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
             userAccount.setUpdateDate(new Date());
             this.save(loginUser);
             userAccountService.save(userAccount);
+            userView = BeanUtils.copyProperties(UserView.class,loginUser);
         }else{
-            data.put("user",user);
-            data.put("new",0);
+            Date now = new Date();
+            if (user.getFreeze() && user.getFreezeExpireTime() !=null && now.getTime() < user.getFreezeExpireTime().getTime()) {
+                throw new ServiceException(ResultCustomMessage.F1004);
+            }
+            userView = BeanUtils.copyProperties(UserView.class,user);
         }
+        String token = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+        String rongToken = RongyunService.getToken(user.getUserId(), user.getNickName(), userView.getPendHeadUrl());
+        userRelRedisTemplate.opsForValue().set(String.format(RedisKeyConstants.CACHE_USER_TOKEN_KEY,token),userView.getUserId(),30*24*60*60,TimeUnit.SECONDS);
+        data.put("user",user);
+        data.put("new",0);
+
         return data;
     }
 

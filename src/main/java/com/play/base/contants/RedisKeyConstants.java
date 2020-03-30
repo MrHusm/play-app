@@ -8,6 +8,8 @@ public class RedisKeyConstants {
 
      //根据用户id获取用户key
      public final static String CACHE_USER_ID_KEY = "user_%d";
+     //用户token key
+     public final static String CACHE_USER_TOKEN_KEY = "user_token_%d";
     //用户关注key
     public final static String CACHE_USER_FOLLOW_KEY = "user_follow_%d";
     //用户粉丝key

@@ -9,7 +9,11 @@ public class ResultCustomMessage extends ResultMessage{
         super(code, message);
     }
 
-    public static final ResultCustomMessage F1001 = new ResultCustomMessage(1001, "验证码发送失败， %s ");
+    public static final ResultCustomMessage F1001 = new ResultCustomMessage(1001, "验证码发送失败， %s");
 
-    public static final ResultCustomMessage F1002 = new ResultCustomMessage(1001, "验证码校验失败， %s ");
+    public static final ResultCustomMessage F1002 = new ResultCustomMessage(1001, "验证码校验失败， %s");
+
+    public static final ResultCustomMessage F1003 = new ResultCustomMessage(1003, "融云获取token异常");
+
+    public static final ResultCustomMessage F1004 = new ResultCustomMessage(1004, "账号已冻结");
 }
