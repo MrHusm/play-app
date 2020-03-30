@@ -39,6 +39,11 @@ public class User implements Serializable{
     private String headUrl;
 
     /**
+     * 待审核头像地址
+     */
+    private String pendHeadUrl;
+
+    /**
      * 头像框地址
      */
     private String headwearUrl;
@@ -354,4 +359,11 @@ public class User implements Serializable{
         this.updateDate = updateDate;
     }
 
+    public String getPendHeadUrl() {
+        return pendHeadUrl;
+    }
+
+    public void setPendHeadUrl(String pendHeadUrl) {
+        this.pendHeadUrl = pendHeadUrl;
+    }
 }

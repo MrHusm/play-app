@@ -7,16 +7,16 @@ package com.play.base.contants;
 public class RedisKeyConstants {
 
      //根据用户id获取用户key
-    public final static String CACHE_USER_ID_KEY="user_id_";
+     public final static String CACHE_USER_ID_KEY = "user_%d";
+    //用户关注key
+    public final static String CACHE_USER_FOLLOW_KEY = "user_follow_%d";
+    //用户粉丝key
+    public final static String CACHE_USER_FANS_KEY = "user_fans_%d";
+    //用户好友key
+    public final static String CACHE_USER_FRIEND_KEY = "user_friend_%d";
+    //用户访客key
+    public final static String CACHE_USER_VISIT_KEY = "user_visit_%d";
 
-    //根据用户id获取绑定qqkey
-    public final static String CACHE_USER_QQ_ID_KEY = "user_qq_id_";
-
-    //根据用户id获取绑定微信key
-    public final static String CACHE_USER_WEIXIN_ID_KEY = "user_weixin_id_";
-
-    //根据用户id获取绑定微博key
-    public final static String CACHE_USER_WEIBO_ID_KEY = "user_weibo_id_";
 
     //图书目录缓存key
     public final static String CACHE_BOOK_CATALOG_KEY = "book_catalog_";

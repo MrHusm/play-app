@@ -1,18 +1,19 @@
 package com.play.ucenter.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.play.base.contants.RedisKeyConstants;
 import com.play.base.dao.IBaseDao;
 import com.play.base.exception.ServiceException;
 import com.play.base.service.impl.BaseServiceImpl;
 import com.play.base.utils.*;
-import com.play.base.utils.BeanUtils;
 import com.play.ucenter.dao.IUserDao;
 import com.play.ucenter.model.User;
 import com.play.ucenter.model.UserAccount;
+import com.play.ucenter.model.UserAuditInfo;
 import com.play.ucenter.service.IUserAccountService;
+import com.play.ucenter.service.IUserAuditInfoService;
 import com.play.ucenter.service.IUserService;
 import com.play.ucenter.view.UserView;
-import org.apache.commons.beanutils.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
@@ -23,23 +24,31 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by hushengmeng on 2020/3/30.
  */
 @Service(value="userService")
 public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUserService {
-
     @Resource
     private IUserDao userDao;
-
+    @Resource
     private IUserAccountService userAccountService;
+    @Resource
+    private IUserAuditInfoService userAuditInfoService;
+    @Resource(name = "redisTemplate")
+    private RedisTemplate<String, User> userRedisTemplate;
+    @Resource(name = "redisTemplate")
+    private RedisTemplate<String, Long> userRelRedisTemplate;
 
     @Override
     public IBaseDao<User> getBaseDao() {
@@ -47,8 +56,26 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
     }
 
     @Override
-    public User getByUserId(Long userId) {
-        return this.findUniqueByParams("userId",userId);
+    public UserView getByUserId(Long userId, Long targetUserId) {
+        String key = String.format(RedisKeyConstants.CACHE_USER_ID_KEY, targetUserId);
+        User user = userRedisTemplate.opsForValue().get(key);
+        if (user == null) {
+            user = this.findUniqueByParams("userId", userId);
+            if (user != null) {
+                userRedisTemplate.opsForValue().set(key, user, 8, TimeUnit.HOURS);
+            }
+        }
+        if (userId.longValue() == targetUserId.longValue() && StringUtils.isNotBlank(user.getPendHeadUrl())) {
+            user.setHeadUrl(user.getPendHeadUrl());
+        }
+        UserView userView = BeanUtils.copyProperties(UserView.class, user);
+        return userView;
+    }
+
+    @Override
+    public void deleteUserCache(Long userId) {
+        String key = String.format(RedisKeyConstants.CACHE_USER_ID_KEY, userId);
+        userRedisTemplate.delete(key);
     }
 
     @Override
@@ -212,10 +239,18 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
     @Override
     public void updateUser(User user) {
         this.update(user);
-        if(StringUtils.isNotBlank(user.getHeadUrl())){
-            //同步头像 TODO
+        if (StringUtils.isNotBlank(user.getPendHeadUrl())) {
+            //保存待审头像
+            UserAuditInfo userAuditInfo = new UserAuditInfo();
+            userAuditInfo.setUserId(user.getUserId());
+            userAuditInfo.setAuditType(3);
+            userAuditInfo.setContent(user.getPendHeadUrl());
+            userAuditInfo.setCreator(user.getUserId());
+            userAuditInfo.setCreatedDate(new Date());
+            this.userAuditInfoService.save(userAuditInfo);
         }
         //清除缓存
+        deleteUserCache(user.getUserId());
     }
 
     @Override
@@ -226,5 +261,120 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
         }
         List<UserView> userViews = BeanUtils.copyProperties(List.class,users);
         return userViews;
+    }
+
+    @Override
+    public Integer getRelType(Long userId, Long toUserId) {
+        if (userId != null && userId.equals(toUserId)) {
+            return 9; // 自己
+        }
+        String followKey = String.format(RedisKeyConstants.CACHE_USER_FOLLOW_KEY, userId);
+        boolean isFollow = userRelRedisTemplate.opsForZSet().score(followKey, toUserId) == null;
+        String beFollowKey = String.format(RedisKeyConstants.CACHE_USER_FOLLOW_KEY, toUserId);
+        boolean beFollow = userRelRedisTemplate.opsForZSet().score(beFollowKey, userId) == null;
+        if (isFollow && beFollow) {
+            return 2; // 好友
+        }
+        if (isFollow) {
+            return 1; // 已关注
+        }
+        if (beFollow) {//粉丝
+            return 0;
+        }
+        return 0; // 没关系
+    }
+
+    @Override
+    public Integer getRelationNum(Integer type, Long userId) {
+        String key = String.format(RedisKeyConstants.CACHE_USER_FOLLOW_KEY, userId);
+        switch (type) {
+            case 1:
+                key = String.format(RedisKeyConstants.CACHE_USER_FOLLOW_KEY, userId);
+                break;
+            case 2:
+                key = String.format(RedisKeyConstants.CACHE_USER_FANS_KEY, userId);
+                break;
+            case 3:
+                key = String.format(RedisKeyConstants.CACHE_USER_FRIEND_KEY, userId);
+                break;
+            case 4:
+                key = String.format(RedisKeyConstants.CACHE_USER_VISIT_KEY, userId);
+                break;
+            default:
+                break;
+        }
+        ZSetOperations<String, Long> operations = userRelRedisTemplate.opsForZSet();
+        return operations.size(key + userId).intValue();
+    }
+
+    @Override
+    public void addVisit(Long mId, Long userId) {
+        String key = String.format(RedisKeyConstants.CACHE_USER_VISIT_KEY, userId);
+        ZSetOperations<String, Long> operations = userRelRedisTemplate.opsForZSet();
+        long nowTimestamp = System.currentTimeMillis();
+        operations.add(key, mId, nowTimestamp);
+    }
+
+    @Override
+    public void addFollow(Long mId, Long userId) {
+        String followKey = String.format(RedisKeyConstants.CACHE_USER_FOLLOW_KEY, mId);
+        String fansKey = String.format(RedisKeyConstants.CACHE_USER_FANS_KEY, userId);
+        ZSetOperations<String, Long> operations = userRelRedisTemplate.opsForZSet();
+        long nowTimestamp = System.currentTimeMillis();
+        operations.add(followKey, userId, nowTimestamp);
+        operations.add(fansKey, mId, nowTimestamp);
+        String key = String.format(RedisKeyConstants.CACHE_USER_FOLLOW_KEY, userId);
+        if (operations.score(key, mId) != null) {
+            //添加好友关系
+            String friendKeyOne = String.format(RedisKeyConstants.CACHE_USER_FRIEND_KEY, mId);
+            String friendKeyTwo = String.format(RedisKeyConstants.CACHE_USER_FRIEND_KEY, userId);
+            operations.add(friendKeyOne, userId, nowTimestamp);
+            operations.add(friendKeyTwo, mId, nowTimestamp);
+        }
+    }
+
+    @Override
+    public void unFollow(Long mId, Long userId) {
+        String followKey = String.format(RedisKeyConstants.CACHE_USER_FOLLOW_KEY, mId);
+        String fansKey = String.format(RedisKeyConstants.CACHE_USER_FANS_KEY, userId);
+        String friendKeyOne = String.format(RedisKeyConstants.CACHE_USER_FRIEND_KEY, mId);
+        String friendKeyTwo = String.format(RedisKeyConstants.CACHE_USER_FRIEND_KEY, userId);
+        ZSetOperations<String, Long> operations = userRelRedisTemplate.opsForZSet();
+        operations.remove(followKey, userId);
+        operations.remove(fansKey, mId);
+        operations.remove(friendKeyOne, userId);
+        operations.remove(friendKeyTwo, mId);
+    }
+
+    @Override
+    public PageFinder getRelationListByPager(Integer type, Long userId, Query query) {
+        String key = String.format(RedisKeyConstants.CACHE_USER_FOLLOW_KEY, userId);
+        switch (type) {
+            case 1:
+                key = String.format(RedisKeyConstants.CACHE_USER_FOLLOW_KEY, userId);
+                break;
+            case 2:
+                key = String.format(RedisKeyConstants.CACHE_USER_FANS_KEY, userId);
+                break;
+            case 3:
+                key = String.format(RedisKeyConstants.CACHE_USER_FRIEND_KEY, userId);
+                break;
+            case 4:
+                key = String.format(RedisKeyConstants.CACHE_USER_VISIT_KEY, userId);
+                break;
+            default:
+                break;
+        }
+        ZSetOperations<String, Long> operations = userRelRedisTemplate.opsForZSet();
+        int total = operations.size(key + userId).intValue();
+        Set<ZSetOperations.TypedTuple<Long>> userIds = operations.reverseRangeWithScores(key, query.getOffset(), query.getOffset() + query.getPageSize() - 1);
+        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+        for (ZSetOperations.TypedTuple<Long> id : userIds) {
+            Map<String, Object> data = new HashMap<String, Object>();
+            UserView user = this.getByUserId(userId, id.getValue());
+            data.put("user", user);
+            data.put("date", id.getScore());
+        }
+        return new PageFinder(query.getPage(), query.getPageSize(), total, new ArrayList(list));
     }
 }

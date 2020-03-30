@@ -3,6 +3,7 @@ package com.play.base.controller;
 import com.play.base.utils.ResultResponse;
 import org.apache.commons.lang.StringUtils;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -15,13 +16,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BaseController{
+	@Resource
+	protected HttpServletRequest request;
 
 	protected static final String TOKEN = "token";
 
 	protected ResultResponse resultResponse = new ResultResponse();
 
 	public Long getUserId(){
-		return 1L;
+		Object userId = request.getAttribute("userId");
+		return userId != null ? Long.valueOf(String.valueOf(userId)) : -1L;
 	}
 
 

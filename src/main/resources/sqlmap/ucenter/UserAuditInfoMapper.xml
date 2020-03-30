@@ -9,6 +9,10 @@
     <result column="creator" property="creator" jdbcType="BIGINT" />
     <result column="created_date" property="createdDate" jdbcType="TIMESTAMP" />
   </resultMap>
+  <sql id="Base_Where">
+    <if test="userId != null">and user_id= #{userId}</if>
+    <if test="auditType != null">and audit_type= #{auditType}</if>
+  </sql>
   <sql id="Base_Column_List" >
     id, user_id, audit_type, content, creator, created_date
   </sql>
@@ -101,4 +105,10 @@
       created_date = #{createdDate,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=INTEGER}
   </update>
+  <select id="getAll" resultMap="BaseResultMap" parameterType="map">
+    select
+    <include refid="Base_Column_List"/>
+    from user_audit_info where 1=1
+    <include refid="Base_Where"/>
+  </select>
 </mapper>

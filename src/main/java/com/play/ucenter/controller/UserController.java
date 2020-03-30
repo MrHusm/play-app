@@ -3,22 +3,23 @@ package com.play.ucenter.controller;
 import com.play.base.controller.BaseController;
 import com.play.base.exception.ServiceException;
 import com.play.base.utils.DateUtil;
+import com.play.base.utils.PageFinder;
+import com.play.base.utils.Query;
 import com.play.base.utils.ResultResponse;
 import com.play.ucenter.model.User;
-import com.play.ucenter.model.UserAccount;
 import com.play.ucenter.service.IUserAccountService;
 import com.play.ucenter.service.IUserService;
 import com.play.ucenter.view.UserView;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,9 +40,6 @@ public class UserController extends BaseController {
 
     @Resource
     IUserAccountService userAccountService;
-
-//    @Resource(name = "redisTemplate")
-//    private RedisTemplate redisTemplate;
 
     /**
      * 用户退出账号
@@ -111,7 +109,9 @@ public class UserController extends BaseController {
         User user = new User();
         user.setUserId(userId);
         user.setNickName(nickName);
-        user.setHeadUrl(headUrl);
+        if (StringUtils.isNotBlank(headUrl)) {
+            user.setPendHeadUrl(headUrl);
+        }
         user.setSex(sex);
         user.setBirthday(DateUtil.getDateByFormat(birthday,"yyyy-MM-dd"));
         user.setProvince(province);
@@ -135,14 +135,85 @@ public class UserController extends BaseController {
     }
 
     /**
+     * 用户详情
+     */
+    @ResponseBody
+    @RequestMapping("/info")
+    public ResultResponse info(@RequestParam(required = true) Long userId) {
+        Long mId = this.getUserId();
+        Map<String, Object> data = new HashMap<String, Object>();
+        UserView user = this.userService.getByUserId(mId, userId);
+        //获取用户之间关系
+        Integer relType = this.userService.getRelType(mId, userId);
+        //获取粉丝数量
+        Integer fansNum = this.userService.getRelationNum(2, userId);
+        userService.addVisit(mId, userId);
+        data.put("user", user);
+        data.put("relType", relType);
+        data.put("fansNum", fansNum);
+        //TODO 获取魅力值 贡献值 礼物墙信息
+        return resultResponse.success(data);
+    }
+
+    /**
+     * 添加关注
+     */
+    @ResponseBody
+    @RequestMapping("/addFollow")
+    public ResultResponse addFollow(@RequestParam(required = true) Long userId) {
+        Long mId = this.getUserId();
+        this.userService.addFollow(mId, userId);
+        return resultResponse.success();
+    }
+
+    /**
+     * 添加关注
+     */
+    @ResponseBody
+    @RequestMapping("/unFollow")
+    public ResultResponse unFollow(@RequestParam(required = true) Long userId) {
+        Long mId = this.getUserId();
+        this.userService.unFollow(mId, userId);
+        return resultResponse.success();
+    }
+
+    /**
+     * 获取关系列表
+     *
+     * @param page
+     * @param limit
+     * @param type  1:关注 2：粉丝 3：好友 4：访客
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = "/relation/pager", method = {RequestMethod.GET})
+    public ResultResponse followPager(@RequestParam(required = true) Integer type, @RequestParam(required = true) Integer page, @RequestParam(required = true) Integer limit) {
+        Long userId = this.getUserId();
+        Query query = new Query();
+        query.setPage(page);
+        query.setPage(limit);
+        PageFinder pageFinder = userService.getRelationListByPager(type, userId, query);
+        return resultResponse.success(pageFinder);
+    }
+
+    /**
      * 我的
      */
     @ResponseBody
     @RequestMapping("/mine")
     public ResultResponse mine(){
         Long userId = this.getUserId();
-        User user = this.userService.findUniqueByParams("userId",userId);
-        UserAccount userAccount = userAccountService.getByUserId(userId);
+        Map<String, Object> data = new HashMap<String, Object>();
+        UserView user = this.userService.getByUserId(userId, userId);
+        Integer followNum = userService.getRelationNum(1, userId);
+        Integer fansNum = userService.getRelationNum(2, userId);
+        Integer friendNum = userService.getRelationNum(3, userId);
+        Integer visitNum = userService.getRelationNum(4, userId);
+        data.put("user", user);
+        data.put("followNum", followNum);
+        data.put("fansNum", fansNum);
+        data.put("friendNum", friendNum);
+        data.put("visitNum", visitNum);
         return resultResponse.success(user);
     }
 
