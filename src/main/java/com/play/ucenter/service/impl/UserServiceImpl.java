@@ -15,6 +15,8 @@ import com.play.ucenter.service.IUserAccountService;
 import com.play.ucenter.service.IUserAuditInfoService;
 import com.play.ucenter.service.IUserService;
 import com.play.ucenter.view.UserVO;
+import com.play.ucenter.view.UserOnlineView;
+import com.play.ucenter.view.UserView;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
@@ -32,6 +34,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -48,6 +51,8 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
     private IUserAuditInfoService userAuditInfoService;
     @Resource(name = "redisTemplate")
     private RedisTemplate<String, User> userRedisTemplate;
+    @Resource(name = "redisTemplate")
+    private RedisTemplate<String, UserOnlineView> userOnlineRedisTemplate;
     @Resource(name = "redisTemplate")
     private RedisTemplate<String, Long> userRelRedisTemplate;
 
@@ -166,20 +171,48 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
             this.save(loginUser);
             userAccountService.save(userAccount);
             userVO = BeanUtils.copyProperties(UserVO.class,loginUser);
+            userView = BeanUtils.copyProperties(UserView.class,loginUser);
+            data.put("new", 1);
         }else{
             Date now = new Date();
             if (user.getFreeze() && user.getFreezeExpireTime() !=null && now.getTime() < user.getFreezeExpireTime().getTime()) {
                 throw new ServiceException(ResultCustomMessage.F1004);
             }
             userVO = BeanUtils.copyProperties(UserVO.class,user);
+            userView = BeanUtils.copyProperties(UserView.class,user);
+            data.put("new", 0);
         }
         String token = UUID.randomUUID().toString().replace("-", "").toLowerCase();
         String rongToken = RongyunService.getToken(user.getUserId(), user.getNickName(), userVO.getPendHeadUrl());
         userRelRedisTemplate.opsForValue().set(String.format(RedisKeyConstants.CACHE_USER_TOKEN_KEY,token), userVO.getUserId(),30*24*60*60,TimeUnit.SECONDS);
         data.put("user",user);
         data.put("new",0);
+        String rongToken = RongyunService.getToken(user.getUserId(), user.getNickName(), userView.getPendHeadUrl());
+        userView.setToken(token);
+        userView.setRongToken(rongToken);
 
+        setUserOnline(userView);
+        data.put("user", userView);
         return data;
+    }
+
+    private void setUserOnline(UserView userView) {
+        String token = userView.getToken();
+        Long userId = userView.getUserId();
+        Timestamp nowTimestamp = new Timestamp(new Date().getTime());
+        UserOnlineView userOnlineView = new UserOnlineView();
+        userOnlineView.setUserId(userId);
+        userOnlineView.setToken(token);
+        userOnlineView.setRefreshTime(nowTimestamp);
+        userOnlineView.setTokenTime(nowTimestamp);
+        userOnlineRedisTemplate.opsForValue().set(String.format(RedisKeyConstants.CACHE_USER_ONLINE_TOKEN_KEY, token), userOnlineView, 30 * 24 * 60 * 60, TimeUnit.SECONDS);
+
+        UserOnlineView oldUserOnline = userOnlineRedisTemplate.opsForValue().get(String.format(RedisKeyConstants.CACHE_USER_ONLINE_ID_KEY, userId));
+        if (oldUserOnline != null) {
+            //删除老的登录用户
+            userOnlineRedisTemplate.delete(String.format(RedisKeyConstants.CACHE_USER_ONLINE_TOKEN_KEY, oldUserOnline.getToken()));
+        }
+        userOnlineRedisTemplate.opsForValue().set(String.format(RedisKeyConstants.CACHE_USER_ONLINE_ID_KEY, userId), userOnlineView, 30 * 24 * 60 * 60, TimeUnit.SECONDS);
     }
 
     /**
@@ -390,5 +423,47 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
             data.put("date", id.getScore());
         }
         return new PageFinder(query.getPage(), query.getPageSize(), total, new ArrayList(list));
+    }
+
+    @Override
+    public String getOnlineTime(Long userId) {
+        UserOnlineView userOnlineView = userOnlineRedisTemplate.opsForValue().get(String.format(RedisKeyConstants.CACHE_USER_ONLINE_ID_KEY, userId));
+        Timestamp refreshTime = userOnlineView.getRefreshTime();
+        if (refreshTime == null) {
+            return "7天前";
+        } else {
+            long nowTimestamp = (new Date()).getTime();
+            long refreshTimetamp = refreshTime.getTime();
+            long timeDifference = nowTimestamp - refreshTimetamp;
+            if (timeDifference < 300000L) {
+                return "在线";
+            } else if (timeDifference < 3600000L) {
+                return timeDifference / 1000L / 60L + "分钟前";
+            } else if (timeDifference < 86400000L) {
+                return timeDifference / 1000L / 60L / 60L + "小时前";
+            } else {
+                return timeDifference < 604800000L ? timeDifference / 1000L / 60L / 60L / 24L + "天前" : "7天前";
+            }
+        }
+    }
+
+    @Override
+    public Long verifyToken(String token) {
+        UserOnlineView userOnlineView = userOnlineRedisTemplate.opsForValue().get(String.format(RedisKeyConstants.CACHE_USER_ONLINE_TOKEN_KEY, token));
+        if (userOnlineView != null) {
+            //刷新token
+            Timestamp nowTimestamp = new Timestamp(new Date().getTime());
+            //2分钟内不刷新用户在线数据
+            Timestamp timestamp = userOnlineView.getRefreshTime();
+            long interval = nowTimestamp.getTime() - timestamp.getTime();
+            Long userId = userOnlineView.getUserId();
+            if (interval > 2 * 60 * 1000) {
+                userOnlineView.setRefreshTime(nowTimestamp);
+                userOnlineRedisTemplate.opsForValue().set(String.format(RedisKeyConstants.CACHE_USER_ONLINE_TOKEN_KEY, token), userOnlineView, 30 * 24 * 60 * 60, TimeUnit.SECONDS);
+                userOnlineRedisTemplate.opsForValue().set(String.format(RedisKeyConstants.CACHE_USER_ONLINE_ID_KEY, userId), userOnlineView, 30 * 24 * 60 * 60, TimeUnit.SECONDS);
+            }
+            return userId;
+        }
+        return -1L;
     }
 }

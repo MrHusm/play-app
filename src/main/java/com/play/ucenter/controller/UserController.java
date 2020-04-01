@@ -147,10 +147,13 @@ public class UserController extends BaseController {
         Integer relType = this.userService.getRelType(mId, userId);
         //获取粉丝数量
         Integer fansNum = this.userService.getRelationNum(2, userId);
+        //用户在线时间
+        String onlineTime = this.userService.getOnlineTime(userId);
         userService.addVisit(mId, userId);
         data.put("user", user);
         data.put("relType", relType);
         data.put("fansNum", fansNum);
+        data.put("onlineTime", onlineTime);
         //TODO 获取魅力值 贡献值 礼物墙信息
         return resultResponse.success(data);
     }

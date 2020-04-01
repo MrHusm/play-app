@@ -3,7 +3,6 @@ package com.play.base.interceptor;
 import com.alibaba.fastjson.JSON;
 import com.play.base.utils.ResultMessage;
 import com.play.base.utils.ResultResponse;
-import com.play.ucenter.model.User;
 import com.play.ucenter.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -40,10 +39,12 @@ public class SecurityInterceptor extends HandlerInterceptorAdapter {
             }
         }
 
-        String token = request.getHeader("x-auth-token");
+        String token = request.getHeader("token");
         if (!StringUtils.isEmpty(token)) {
-            User user = userService.get(1L);
-            return true;
+            Long userId = userService.verifyToken(token);
+            if (userId > 0) {
+                return true;
+            }
         }
         //如果是接口请求，返回json数据
         response.setHeader("Access-Control-Allow-Origin", "*");

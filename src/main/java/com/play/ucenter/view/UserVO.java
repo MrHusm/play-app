@@ -15,6 +15,13 @@ public class UserVO implements Serializable {
 
     private Long userId;
 
+    private String token;
+
+    /**
+     * 融云token
+     */
+    private String rongToken;
+
     /**
      * 靓号
      */
@@ -216,5 +223,21 @@ public class UserVO implements Serializable {
 
     public void setPendHeadUrl(String pendHeadUrl) {
         this.pendHeadUrl = pendHeadUrl;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getRongToken() {
+        return rongToken;
+    }
+
+    public void setRongToken(String rongToken) {
+        this.rongToken = rongToken;
     }
 }

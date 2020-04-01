@@ -112,4 +112,13 @@ public interface IUserService extends IBaseService<User,Long> {
      * @return
      */
     PageFinder getRelationListByPager(Integer type, Long userId, Query query);
+
+    /**
+     * 获取用户在线状态
+     *
+     * @param userId
+     */
+    String getOnlineTime(Long userId);
+
+    Long verifyToken(String token);
 }
