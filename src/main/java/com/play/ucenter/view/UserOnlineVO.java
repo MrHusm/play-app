@@ -9,7 +9,7 @@ import java.sql.Timestamp;
  * Created by lenovo on 2020/3/26.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserOnlineView implements Serializable {
+public class UserOnlineVO implements Serializable {
     private static final long serialVersionUID = 1L;
     // fields
     /**
