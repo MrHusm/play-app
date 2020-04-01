@@ -6,7 +6,7 @@ import com.play.base.service.IBaseService;
 import com.play.base.utils.PageFinder;
 import com.play.base.utils.Query;
 import com.play.ucenter.model.User;
-import com.play.ucenter.view.UserView;
+import com.play.ucenter.view.UserVO;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +22,7 @@ public interface IUserService extends IBaseService<User,Long> {
      * @param targetUserId
      * @return
      */
-    UserView getByUserId(Long userId, Long targetUserId);
+    UserVO getByUserId(Long userId, Long targetUserId);
 
     /**
      * 删除用户缓存
@@ -63,7 +63,7 @@ public interface IUserService extends IBaseService<User,Long> {
      * @param keyword
      * @return
      */
-    List<UserView> search(String keyword);
+    List<UserVO> search(String keyword);
 
     /**
      * 获取用户关系（0: 没关系 1:已关注 2:好友 9:自己）

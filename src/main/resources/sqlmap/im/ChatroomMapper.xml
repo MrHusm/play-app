@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.play.im.model.ChatroomMapper" >
+  <resultMap id="BaseResultMap" type="com.play.im.model.Chatroom" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="room_id" property="roomId" jdbcType="INTEGER" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="BIT" />
+    <result column="img_url" property="imgUrl" jdbcType="VARCHAR" />
+    <result column="bg_img_url" property="bgImgUrl" jdbcType="VARCHAR" />
+    <result column="notice" property="notice" jdbcType="VARCHAR" />
+    <result column="slogan" property="slogan" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="BIT" />
+    <result column="ownner_id" property="ownnerId" jdbcType="BIGINT" />
+    <result column="display_heart" property="displayHeart" jdbcType="BIT" />
+    <result column="tag_type" property="tagType" jdbcType="BIT" />
+    <result column="mic_type" property="micType" jdbcType="BIT" />
+    <result column="guild_id" property="guildId" jdbcType="INTEGER" />
+    <result column="update_date" property="updateDate" jdbcType="TIMESTAMP" />
+    <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Where">
+    <if test="userId != null"> and user_id= #{userId}</if>
+  </sql>
+  <sql id="Base_Column_List" >
+    id, room_id, name, type, img_url, bg_img_url, notice, slogan, status, ownner_id, 
+    display_heart, tag_type, mic_type, guild_id, update_date, create_date
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from chatroom
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from chatroom
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.play.im.model.Chatroom" >
+    <selectKey resultType="java.lang.Integer" keyProperty="id" order="AFTER" >
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into chatroom (room_id, name, type, 
+      img_url, bg_img_url, notice, 
+      slogan, status, ownner_id, 
+      display_heart, tag_type, mic_type, 
+      guild_id, update_date, create_date
+      )
+    values (#{roomId,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{type,jdbcType=BIT}, 
+      #{imgUrl,jdbcType=VARCHAR}, #{bgImgUrl,jdbcType=VARCHAR}, #{notice,jdbcType=VARCHAR}, 
+      #{slogan,jdbcType=VARCHAR}, #{status,jdbcType=BIT}, #{ownnerId,jdbcType=BIGINT}, 
+      #{displayHeart,jdbcType=BIT}, #{tagType,jdbcType=BIT}, #{micType,jdbcType=BIT}, 
+      #{guildId,jdbcType=INTEGER}, #{updateDate,jdbcType=TIMESTAMP}, #{createDate,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.play.im.model.Chatroom" >
+    <selectKey resultType="java.lang.Integer" keyProperty="id" order="AFTER" >
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into chatroom
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="roomId != null" >
+        room_id,
+      </if>
+      <if test="name != null" >
+        name,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="imgUrl != null" >
+        img_url,
+      </if>
+      <if test="bgImgUrl != null" >
+        bg_img_url,
+      </if>
+      <if test="notice != null" >
+        notice,
+      </if>
+      <if test="slogan != null" >
+        slogan,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="ownnerId != null" >
+        ownner_id,
+      </if>
+      <if test="displayHeart != null" >
+        display_heart,
+      </if>
+      <if test="tagType != null" >
+        tag_type,
+      </if>
+      <if test="micType != null" >
+        mic_type,
+      </if>
+      <if test="guildId != null" >
+        guild_id,
+      </if>
+      <if test="updateDate != null" >
+        update_date,
+      </if>
+      <if test="createDate != null" >
+        create_date,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="roomId != null" >
+        #{roomId,jdbcType=INTEGER},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=BIT},
+      </if>
+      <if test="imgUrl != null" >
+        #{imgUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="bgImgUrl != null" >
+        #{bgImgUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="notice != null" >
+        #{notice,jdbcType=VARCHAR},
+      </if>
+      <if test="slogan != null" >
+        #{slogan,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=BIT},
+      </if>
+      <if test="ownnerId != null" >
+        #{ownnerId,jdbcType=BIGINT},
+      </if>
+      <if test="displayHeart != null" >
+        #{displayHeart,jdbcType=BIT},
+      </if>
+      <if test="tagType != null" >
+        #{tagType,jdbcType=BIT},
+      </if>
+      <if test="micType != null" >
+        #{micType,jdbcType=BIT},
+      </if>
+      <if test="guildId != null" >
+        #{guildId,jdbcType=INTEGER},
+      </if>
+      <if test="updateDate != null" >
+        #{updateDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createDate != null" >
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.play.im.model.Chatroom" >
+    update chatroom
+    <set >
+      <if test="roomId != null" >
+        room_id = #{roomId,jdbcType=INTEGER},
+      </if>
+      <if test="name != null" >
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        type = #{type,jdbcType=BIT},
+      </if>
+      <if test="imgUrl != null" >
+        img_url = #{imgUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="bgImgUrl != null" >
+        bg_img_url = #{bgImgUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="notice != null" >
+        notice = #{notice,jdbcType=VARCHAR},
+      </if>
+      <if test="slogan != null" >
+        slogan = #{slogan,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=BIT},
+      </if>
+      <if test="ownnerId != null" >
+        ownner_id = #{ownnerId,jdbcType=BIGINT},
+      </if>
+      <if test="displayHeart != null" >
+        display_heart = #{displayHeart,jdbcType=BIT},
+      </if>
+      <if test="tagType != null" >
+        tag_type = #{tagType,jdbcType=BIT},
+      </if>
+      <if test="micType != null" >
+        mic_type = #{micType,jdbcType=BIT},
+      </if>
+      <if test="guildId != null" >
+        guild_id = #{guildId,jdbcType=INTEGER},
+      </if>
+      <if test="updateDate != null" >
+        update_date = #{updateDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createDate != null" >
+        create_date = #{createDate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.play.im.model.Chatroom" >
+    update chatroom
+    set room_id = #{roomId,jdbcType=INTEGER},
+      name = #{name,jdbcType=VARCHAR},
+      type = #{type,jdbcType=BIT},
+      img_url = #{imgUrl,jdbcType=VARCHAR},
+      bg_img_url = #{bgImgUrl,jdbcType=VARCHAR},
+      notice = #{notice,jdbcType=VARCHAR},
+      slogan = #{slogan,jdbcType=VARCHAR},
+      status = #{status,jdbcType=BIT},
+      ownner_id = #{ownnerId,jdbcType=BIGINT},
+      display_heart = #{displayHeart,jdbcType=BIT},
+      tag_type = #{tagType,jdbcType=BIT},
+      mic_type = #{micType,jdbcType=BIT},
+      guild_id = #{guildId,jdbcType=INTEGER},
+      update_date = #{updateDate,jdbcType=TIMESTAMP},
+      create_date = #{createDate,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="getAll" resultMap="BaseResultMap" parameterType="map">
+    select
+    <include refid="Base_Column_List" />
+    from chatroom where 1=1
+    <include refid="Base_Where" />
+  </select>
+</mapper>
