@@ -18,6 +18,8 @@ public class RedisKeyConstants {
     public final static String CACHE_USER_FRIEND_KEY = "user_friend_%d";
     //用户访客key
     public final static String CACHE_USER_VISIT_KEY = "user_visit_%d";
+    //聊天室key
+    public final static String CACHE_CHATROOM_ID_KEY = "chatroom_%d";
 
 
     //图书目录缓存key

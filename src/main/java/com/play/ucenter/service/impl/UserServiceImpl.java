@@ -14,7 +14,7 @@ import com.play.ucenter.model.UserAuditInfo;
 import com.play.ucenter.service.IUserAccountService;
 import com.play.ucenter.service.IUserAuditInfoService;
 import com.play.ucenter.service.IUserService;
-import com.play.ucenter.view.UserView;
+import com.play.ucenter.view.UserVO;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
@@ -57,7 +57,7 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
     }
 
     @Override
-    public UserView getByUserId(Long userId, Long targetUserId) {
+    public UserVO getByUserId(Long userId, Long targetUserId) {
         String key = String.format(RedisKeyConstants.CACHE_USER_ID_KEY, targetUserId);
         User user = userRedisTemplate.opsForValue().get(key);
         if (user == null) {
@@ -69,8 +69,8 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
         if (userId.longValue() == targetUserId.longValue() && StringUtils.isNotBlank(user.getPendHeadUrl())) {
             user.setHeadUrl(user.getPendHeadUrl());
         }
-        UserView userView = BeanUtils.copyProperties(UserView.class, user);
-        return userView;
+        UserVO userVO = BeanUtils.copyProperties(UserVO.class, user);
+        return userVO;
     }
 
     @Override
@@ -145,7 +145,7 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
     public Map<String,Object> loginByMobile(String mobile, String code, User loginUser) throws ServiceException{
         verifyCode(mobile,code);
         Map<String,Object> data = new HashMap<String, Object>();
-        UserView userView;
+        UserVO userVO;
         User user =  this.findUniqueByParams("mobile", mobile);
         if(user == null){
             //注册账号 TODO
@@ -165,17 +165,17 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
             userAccount.setUpdateDate(new Date());
             this.save(loginUser);
             userAccountService.save(userAccount);
-            userView = BeanUtils.copyProperties(UserView.class,loginUser);
+            userVO = BeanUtils.copyProperties(UserVO.class,loginUser);
         }else{
             Date now = new Date();
             if (user.getFreeze() && user.getFreezeExpireTime() !=null && now.getTime() < user.getFreezeExpireTime().getTime()) {
                 throw new ServiceException(ResultCustomMessage.F1004);
             }
-            userView = BeanUtils.copyProperties(UserView.class,user);
+            userVO = BeanUtils.copyProperties(UserVO.class,user);
         }
         String token = UUID.randomUUID().toString().replace("-", "").toLowerCase();
-        String rongToken = RongyunService.getToken(user.getUserId(), user.getNickName(), userView.getPendHeadUrl());
-        userRelRedisTemplate.opsForValue().set(String.format(RedisKeyConstants.CACHE_USER_TOKEN_KEY,token),userView.getUserId(),30*24*60*60,TimeUnit.SECONDS);
+        String rongToken = RongyunService.getToken(user.getUserId(), user.getNickName(), userVO.getPendHeadUrl());
+        userRelRedisTemplate.opsForValue().set(String.format(RedisKeyConstants.CACHE_USER_TOKEN_KEY,token), userVO.getUserId(),30*24*60*60,TimeUnit.SECONDS);
         data.put("user",user);
         data.put("new",0);
 
@@ -268,13 +268,13 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
     }
 
     @Override
-    public List<UserView> search(String keyword) {
+    public List<UserVO> search(String keyword) {
         List<User> users = this.findListByParams("userId",keyword);
         if(CollectionUtils.isEmpty(users)){
             users = this.findListByParams("nickName","%"+ keyword + "%");
         }
-        List<UserView> userViews = BeanUtils.copyProperties(List.class,users);
-        return userViews;
+        List<UserVO> userVOS = BeanUtils.copyProperties(List.class,users);
+        return userVOS;
     }
 
     @Override
@@ -385,7 +385,7 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
         List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
         for (ZSetOperations.TypedTuple<Long> id : userIds) {
             Map<String, Object> data = new HashMap<String, Object>();
-            UserView user = this.getByUserId(userId, id.getValue());
+            UserVO user = this.getByUserId(userId, id.getValue());
             data.put("user", user);
             data.put("date", id.getScore());
         }

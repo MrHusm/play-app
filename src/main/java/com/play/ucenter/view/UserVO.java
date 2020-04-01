@@ -10,7 +10,7 @@ import java.util.Date;
  * Created by lenovo on 2020/3/26.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserView implements Serializable {
+public class UserVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Long userId;

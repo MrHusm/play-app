@@ -16,4 +16,6 @@ public class ResultCustomMessage extends ResultMessage{
     public static final ResultCustomMessage F1003 = new ResultCustomMessage(1003, "融云获取token异常");
 
     public static final ResultCustomMessage F1004 = new ResultCustomMessage(1004, "账号已冻结");
+
+    public static final ResultCustomMessage F1005 = new ResultCustomMessage(1005, "已拥有个人聊天室");
 }

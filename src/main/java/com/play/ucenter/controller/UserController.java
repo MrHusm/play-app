@@ -9,7 +9,7 @@ import com.play.base.utils.ResultResponse;
 import com.play.ucenter.model.User;
 import com.play.ucenter.service.IUserAccountService;
 import com.play.ucenter.service.IUserService;
-import com.play.ucenter.view.UserView;
+import com.play.ucenter.view.UserVO;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +29,7 @@ import java.util.Map;
  */
 @Controller
 @Scope("prototype")
-@RequestMapping("user")
+@RequestMapping("/user")
 @Validated
 public class UserController extends BaseController {
 
@@ -130,7 +130,7 @@ public class UserController extends BaseController {
     @ResponseBody
     @RequestMapping(value = "/search", method = RequestMethod.POST)
     public ResultResponse search(@RequestParam(required = true) String keyword)throws ServiceException {
-        List<UserView> users = userService.search(keyword);
+        List<UserVO> users = userService.search(keyword);
         return resultResponse.success(users);
     }
 
@@ -142,7 +142,7 @@ public class UserController extends BaseController {
     public ResultResponse info(@RequestParam(required = true) Long userId) {
         Long mId = this.getUserId();
         Map<String, Object> data = new HashMap<String, Object>();
-        UserView user = this.userService.getByUserId(mId, userId);
+        UserVO user = this.userService.getByUserId(mId, userId);
         //获取用户之间关系
         Integer relType = this.userService.getRelType(mId, userId);
         //获取粉丝数量
@@ -204,7 +204,7 @@ public class UserController extends BaseController {
     public ResultResponse mine(){
         Long userId = this.getUserId();
         Map<String, Object> data = new HashMap<String, Object>();
-        UserView user = this.userService.getByUserId(userId, userId);
+        UserVO user = this.userService.getByUserId(userId, userId);
         Integer followNum = userService.getRelationNum(1, userId);
         Integer fansNum = userService.getRelationNum(2, userId);
         Integer friendNum = userService.getRelationNum(3, userId);
