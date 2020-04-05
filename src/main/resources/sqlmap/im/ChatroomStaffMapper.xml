@@ -10,9 +10,10 @@
     <result column="update_date" property="updateDate" jdbcType="TIMESTAMP" />
   </resultMap>
   <sql id="Base_Where">
-    <if test="userId != null"> and user_id= #{userId}</if>
+    <if test="userId != null">and user_id= #{userId}</if>
+    <if test="roomId != null">and room_id= #{roomId}</if>
   </sql>
-  <sql id="Base_Column_List" >
+  <sql id="Base_Column_List">
     id, user_id, room_id, type, create_date, update_date
   </sql>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
