@@ -25,6 +25,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -248,6 +249,82 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
         return userMicVOS;
     }
 
+    @Override
+    public List<UserVO> userList(Long userId, Integer roomId) {
+        //添加用户到房间用户列表中
+        String roomUserKey = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_KEY, roomId);
+        Set<Long> userIds = redisTemplate.opsForZSet().rangeByScore(roomUserKey, 0, -1);
+        List<UserVO> users = new ArrayList<UserVO>();
+        for (Long uid : userIds) {
+            UserVO user = this.userService.getByUserId(userId, uid);
+            users.add(user);
+        }
+        return users;
+    }
+
+    @Override
+    public void addNospeak(Long uid, Long userId, Integer roomId, Integer time) {
+        String key = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_NOSPEAK_KEY, roomId);
+        if (time == -1) {
+            time = 999999;
+        }
+        redisTemplate.opsForZSet().add(key, userId, System.currentTimeMillis() + time * 60 * 1000);
+    }
+
+    @Override
+    public void removeNospeak(Long uid, Long userId, Integer roomId) {
+        String key = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_NOSPEAK_KEY, roomId);
+        redisTemplate.opsForZSet().remove(key, userId);
+    }
+
+    @Override
+    public List<UserVO> nospeakList(Long userId, Integer roomId) {
+        //添加用户到房间用户列表中
+        String key = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_NOSPEAK_KEY, roomId);
+        Set<Long> userIds = redisTemplate.opsForZSet().rangeByScore(key, 0, -1);
+        List<UserVO> users = new ArrayList<UserVO>();
+        for (Long uid : userIds) {
+            UserVO user = this.userService.getByUserId(userId, uid);
+            users.add(user);
+        }
+        return users;
+    }
+
+    @Override
+    public void addBlack(Long uid, Long userId, Integer roomId, Integer time) {
+        String blackKey = String.format(RedisKeyConstants.CACHE_CHATROOM_BLACK_KEY, roomId);
+        redisTemplate.opsForList().leftPush(blackKey, userId);
+    }
+
+    @Override
+    public void removeBlack(Long uid, Long userId, Integer roomId) {
+        String blackKey = String.format(RedisKeyConstants.CACHE_CHATROOM_BLACK_KEY, roomId);
+        redisTemplate.opsForList().remove(blackKey, 0, userId);
+    }
+
+    @Override
+    public List<UserVO> blackList(Long userId, Integer roomId) {
+        String blackKey = String.format(RedisKeyConstants.CACHE_CHATROOM_BLACK_KEY, roomId);
+        List<Long> userIds = redisTemplate.opsForList().range(blackKey, 0, -1);
+        List<UserVO> users = new ArrayList<UserVO>();
+        for (Long uid : userIds) {
+            UserVO user = this.userService.getByUserId(userId, uid);
+            users.add(user);
+        }
+        return users;
+    }
+
+    @Override
+    public void leave(Integer roomId, Long userId) {
+        //删除原所在房间的用户信息
+        String roomUserKey = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_KEY, roomId);
+        redisTemplate.opsForZSet().remove(roomUserKey, userId);
+        //取消排麦
+        cancelUpMic(userId, Integer.parseInt(roomId.toString()));
+        //用户下麦
+        downMic(userId, Integer.parseInt(roomId.toString()));
+    }
+
     /**
      * 获取房间麦位信息
      *
@@ -278,13 +355,8 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
         String userChatroomKey = RedisKeyConstants.CACHE_USER_CHATROOM_KEY;
         Object oldRoomId = redisTemplate.opsForHash().get(userChatroomKey, userId);
         if (oldRoomId != null && Integer.parseInt(oldRoomId.toString()) != roomId.intValue()) {
-            //删除原所在房间的用户信息
-            String oldRoomUserKey = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_KEY, Integer.parseInt(oldRoomId.toString()));
-            redisTemplate.opsForZSet().remove(oldRoomUserKey, userId);
-            //原所在房间用户取消排麦
-            cancelUpMic(userId, Integer.parseInt(oldRoomId.toString()));
-            //原所在房间用户下麦
-            downMic(userId, Integer.parseInt(oldRoomId.toString()));
+            //离开原来房间
+            leave(Integer.parseInt(oldRoomId.toString()), userId);
         }
         //添加用户到房间用户列表中
         String roomUserKey = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_KEY, roomId);

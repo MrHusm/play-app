@@ -14,8 +14,8 @@ import com.play.ucenter.model.UserAuditInfo;
 import com.play.ucenter.service.IUserAccountService;
 import com.play.ucenter.service.IUserAuditInfoService;
 import com.play.ucenter.service.IUserService;
-import com.play.ucenter.view.UserVO;
 import com.play.ucenter.view.UserOnlineVO;
+import com.play.ucenter.view.UserVO;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
@@ -65,7 +65,7 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
         String key = String.format(RedisKeyConstants.CACHE_USER_ID_KEY, targetUserId);
         User user = userRedisTemplate.opsForValue().get(key);
         if (user == null) {
-            user = this.findUniqueByParams("userId", userId);
+            user = this.findUniqueByParams("userId", targetUserId);
             if (user != null) {
                 userRedisTemplate.opsForValue().set(key, user, 8, TimeUnit.HOURS);
             }

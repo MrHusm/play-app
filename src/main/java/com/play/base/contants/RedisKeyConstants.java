@@ -36,6 +36,8 @@ public class RedisKeyConstants {
     public final static String CACHE_CHATROOM_USER_KEY = "chatroom_user_%d";
     //聊天室麦位信息key
     public final static String CACHE_CHATROOM_MIC_KEY = "chatroom_mic_%d";
+    //禁言用户key
+    public final static String CACHE_CHATROOM_USER_NOSPEAK_KEY = "chatroom_user_nospeak_%d";
 
 
 }

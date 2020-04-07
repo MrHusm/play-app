@@ -5,6 +5,7 @@ import com.play.base.service.IBaseService;
 import com.play.im.model.Chatroom;
 import com.play.im.view.ChatroomVO;
 import com.play.ucenter.view.UserMicVO;
+import com.play.ucenter.view.UserVO;
 
 import java.util.List;
 
@@ -78,4 +79,75 @@ public interface IChatroomService extends IBaseService<Chatroom,Long> {
     List<UserMicVO> roomMicQueue(Integer roomId);
 
 
+    /**
+     * 聊天室用户列表
+     *
+     * @param userId 查看人id
+     * @param roomId
+     */
+    List<UserVO> userList(Long userId, Integer roomId);
+
+    /**
+     * 用户禁言
+     *
+     * @param uid
+     * @param userId
+     * @param roomId
+     * @param time
+     */
+    void addNospeak(Long uid, Long userId, Integer roomId, Integer time);
+
+    /**
+     * 解除用户禁言
+     *
+     * @param uid
+     * @param userId
+     * @param roomId
+     */
+    void removeNospeak(Long uid, Long userId, Integer roomId);
+
+    /**
+     * 禁言用户列表
+     *
+     * @param userId 查看人id
+     * @param roomId
+     * @return
+     */
+    List<UserVO> nospeakList(Long userId, Integer roomId);
+
+    /**
+     * 用户加入黑名单 踢出房间
+     *
+     * @param uid
+     * @param userId
+     * @param roomId
+     * @param time
+     */
+    void addBlack(Long uid, Long userId, Integer roomId, Integer time);
+
+    /**
+     * 用户移除黑名单
+     *
+     * @param uid
+     * @param userId
+     * @param roomId
+     */
+    void removeBlack(Long uid, Long userId, Integer roomId);
+
+    /**
+     * 房间用户黑名单列表
+     *
+     * @param userId
+     * @param roomId
+     * @return
+     */
+    List<UserVO> blackList(Long userId, Integer roomId);
+
+    /**
+     * 用户离开房间
+     *
+     * @param roomId
+     * @param userId
+     */
+    void leave(Integer roomId, Long userId);
 }

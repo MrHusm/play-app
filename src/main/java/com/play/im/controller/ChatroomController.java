@@ -8,8 +8,8 @@ import com.play.base.utils.ResultResponse;
 import com.play.im.model.Chatroom;
 import com.play.im.service.IChatroomService;
 import com.play.im.view.ChatroomVO;
-import org.apache.commons.lang.StringUtils;
 import com.play.ucenter.view.UserMicVO;
+import com.play.ucenter.view.UserVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -91,8 +91,21 @@ public class ChatroomController extends BaseController {
     @RequestMapping(value = "/join", method = {RequestMethod.POST})
     public ResultResponse join(@RequestParam(required = true) Integer roomId, @RequestParam(required = false) Integer pwd) throws ServiceException {
         Long userId = this.getUserId();
-        //获取房间基本信息
         chatroomService.join(userId, roomId, pwd);
+        return resultResponse.success();
+    }
+
+    /**
+     * 离开聊天室
+     *
+     * @param roomId
+     * @return
+     * @throws ServiceException
+     */
+    @RequestMapping(value = "/leave", method = {RequestMethod.POST})
+    public ResultResponse leave(@RequestParam(required = true) Integer roomId) throws ServiceException {
+        Long userId = this.getUserId();
+        chatroomService.leave(roomId, userId);
         return resultResponse.success();
     }
 
@@ -134,6 +147,76 @@ public class ChatroomController extends BaseController {
         Long userId = this.getUserId();
         List<UserMicVO> userMicVOS = chatroomService.roomMicQueue(roomId);
         return resultResponse.success(userMicVOS);
+    }
+
+    /**
+     * 聊天室用户列表
+     */
+    @RequestMapping(value = "/user/list", method = {RequestMethod.GET})
+    public ResultResponse userList(@RequestParam(required = true) Integer roomId) throws ServiceException {
+        Long userId = this.getUserId();
+        List<UserVO> users = chatroomService.userList(userId, roomId);
+        return resultResponse.success(users);
+    }
+
+    /**
+     * 用户禁言
+     */
+    @RequestMapping(value = "/add/nospeak", method = {RequestMethod.GET})
+    public ResultResponse addNospeak(@RequestParam(required = true) Integer roomId, @RequestParam(required = true) Long userId, @RequestParam(required = true) Integer time) throws ServiceException {
+        Long uid = this.getUserId();
+        chatroomService.addNospeak(uid, userId, roomId, time);
+        return resultResponse.success();
+    }
+
+    /**
+     * 解除用户禁言
+     */
+    @RequestMapping(value = "/remove/nospeak", method = {RequestMethod.GET})
+    public ResultResponse removeNospeak(@RequestParam(required = true) Integer roomId, @RequestParam(required = true) Long userId) throws ServiceException {
+        Long uid = this.getUserId();
+        chatroomService.removeNospeak(uid, userId, roomId);
+        return resultResponse.success();
+    }
+
+    /**
+     * 禁言用户列表
+     */
+    @RequestMapping(value = "/nospeak/list", method = {RequestMethod.GET})
+    public ResultResponse nospeakList(@RequestParam(required = true) Integer roomId) throws ServiceException {
+        Long userId = this.getUserId();
+        List<UserVO> users = chatroomService.nospeakList(userId, roomId);
+        return resultResponse.success(users);
+    }
+
+    /**
+     * 用户加入黑名单 踢出房间
+     */
+    @RequestMapping(value = "/add/black", method = {RequestMethod.GET})
+    public ResultResponse addBlack(@RequestParam(required = true) Integer roomId, @RequestParam(required = true) Long userId, @RequestParam(required = true) Integer time) throws ServiceException {
+        Long uid = this.getUserId();
+        chatroomService.addBlack(uid, userId, roomId, time);
+        return resultResponse.success();
+    }
+
+    /**
+     * 解除用户黑名单
+     */
+    @RequestMapping(value = "/remove/black", method = {RequestMethod.GET})
+    public ResultResponse removeBlack(@RequestParam(required = true) Integer roomId, @RequestParam(required = true) Long userId) throws ServiceException {
+        Long uid = this.getUserId();
+        chatroomService.removeBlack(uid, userId, roomId);
+        return resultResponse.success();
+    }
+
+    /**
+     * 黑名单用户列表
+     */
+    @RequestMapping(value = "/black/list", method = {RequestMethod.GET})
+    public ResultResponse blackList(@RequestParam(required = true) Integer roomId) throws ServiceException {
+        Long userId = this.getUserId();
+        List<UserVO> users = chatroomService.blackList(userId, roomId);
+        return resultResponse.success(users);
     }
 
 }
