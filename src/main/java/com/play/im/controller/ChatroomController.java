@@ -7,6 +7,8 @@ import com.play.base.utils.Query;
 import com.play.base.utils.ResultResponse;
 import com.play.im.model.Chatroom;
 import com.play.im.service.IChatroomService;
+import com.play.im.service.IChatroomStaffService;
+import com.play.im.view.ChatroomStaffVO;
 import com.play.im.view.ChatroomVO;
 import com.play.ucenter.view.UserMicVO;
 import com.play.ucenter.view.UserVO;
@@ -37,6 +39,8 @@ public class ChatroomController extends BaseController {
 
     @Resource
     IChatroomService chatroomService;
+    @Resource
+    IChatroomStaffService chatroomStaffService;
     /**
      * 创建个人聊天室
      * @param name 聊天室名称
@@ -218,5 +222,79 @@ public class ChatroomController extends BaseController {
         List<UserVO> users = chatroomService.blackList(userId, roomId);
         return resultResponse.success(users);
     }
+
+    /**
+     * 关闭房间
+     */
+    @RequestMapping(value = "/close", method = {RequestMethod.GET})
+    public ResultResponse close(@RequestParam(required = true) Integer roomId) throws ServiceException {
+        Long userId = this.getUserId();
+        chatroomService.close(userId, roomId);
+        return resultResponse.success();
+    }
+
+    /**
+     * 开启房间
+     */
+    @RequestMapping(value = "/open", method = {RequestMethod.GET})
+    public ResultResponse open(@RequestParam(required = true) Integer roomId) throws ServiceException {
+        Long userId = this.getUserId();
+        chatroomService.open(userId, roomId);
+        return resultResponse.success();
+    }
+
+    /**
+     * 编辑房间信息 开关心动值
+     */
+    @RequestMapping(value = "/open", method = {RequestMethod.GET})
+    public ResultResponse open(@RequestParam(required = true)Integer roomId, Chatroom chatroom) throws ServiceException {
+        Long userId = this.getUserId();
+        chatroom.setRoomId(roomId);
+        chatroomService.updateChatroom(chatroom);
+        return resultResponse.success();
+    }
+
+    /**
+     * 添加聊天室工作人员
+     * @param userId
+     * @param type 用户类型 2：主持 3：管理
+     * @return
+     * @throws ServiceException
+     */
+    @RequestMapping(value = "/add/staff", method = {RequestMethod.GET})
+    public ResultResponse addStaff(@RequestParam(required = true)Long userId,@RequestParam(required = true)Integer type,@RequestParam(required = true)Integer roomId) throws ServiceException {
+        Long uid = this.getUserId();
+        chatroomStaffService.addStaff(uid,roomId,userId,type);
+        return resultResponse.success();
+    }
+
+    /**
+     * 聊天室工作人员删除
+     * @param userId
+     * @param roomId
+     * @return
+     * @throws ServiceException
+     */
+    @RequestMapping(value = "/delete/staff", method = {RequestMethod.GET})
+    public ResultResponse deleteStaff(@RequestParam(required = true)Long userId,@RequestParam(required = true)Integer roomId) throws ServiceException {
+        Long uid = this.getUserId();
+        chatroomStaffService.deleteStaff(uid,roomId,userId);
+        return resultResponse.success();
+    }
+
+    /**
+     * 查询聊天室工作人员列表
+     * @param roomId
+     * @param type 用户类型 1：房主 2：主持 3：管理
+     * @return
+     * @throws ServiceException
+     */
+    @RequestMapping(value = "/staff/list", method = {RequestMethod.GET})
+    public ResultResponse staffList(@RequestParam(required = true)Long roomId,@RequestParam(required = true)Integer type) throws ServiceException {
+        Long uid = this.getUserId();
+        List<ChatroomStaffVO> list = chatroomStaffService.list(roomId,type);
+        return resultResponse.success(list);
+    }
+
 
 }

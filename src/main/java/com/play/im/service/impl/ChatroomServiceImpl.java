@@ -316,13 +316,41 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
 
     @Override
     public void leave(Integer roomId, Long userId) {
-        //删除原所在房间的用户信息
+        //删除房间的用户信息
         String roomUserKey = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_KEY, roomId);
         redisTemplate.opsForZSet().remove(roomUserKey, userId);
         //取消排麦
         cancelUpMic(userId, Integer.parseInt(roomId.toString()));
         //用户下麦
         downMic(userId, Integer.parseInt(roomId.toString()));
+    }
+
+    @Override
+    public void close(Long userId, Integer roomId) {
+        //删除房间所有用户信息
+        String roomUserKey = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_KEY, roomId);
+        redisTemplate.delete(roomUserKey);
+        //取消用户排麦
+        String micKey = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_QUEUE_KEY, roomId);
+        redisTemplate.delete(micKey);
+        //所有用户下麦
+        String roomMicKey = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_KEY, roomId);
+        redisTemplate.delete(roomMicKey);
+        //关闭融云聊天室 TODO
+        this.chatroomDao.updateRoomStatus(roomId,2);
+    }
+
+    @Override
+    public void open(Long userId, Integer roomId) {
+        //开启融云聊天室 TODO
+        this.chatroomDao.updateRoomStatus(roomId,1);
+    }
+
+    @Override
+    public void updateChatroom(Chatroom chatroom) {
+        this.update(chatroom);
+        String key = String.format(RedisKeyConstants.CACHE_CHATROOM_ID_KEY,chatroom.getRoomId());
+        redisTemplate.delete(key);
     }
 
     /**
