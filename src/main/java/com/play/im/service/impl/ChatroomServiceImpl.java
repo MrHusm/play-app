@@ -17,8 +17,10 @@ import com.play.ucenter.service.IUserService;
 import com.play.ucenter.view.UserMicVO;
 import com.play.ucenter.view.UserVO;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -44,6 +46,8 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     private RedisTemplate<String, Chatroom> chatroomRedisTemplate;
     @Resource(name = "redisTemplate")
     private RedisTemplate<String, Long> redisTemplate;
+    @Resource(name = "redisTemplate")
+    private RedisTemplate<String, Integer> intRedisTemplate;
     @Resource(name = "redisTemplate")
     private RedisTemplate<String, UserMicVO> userMicRedisTemplate;
     @Resource(name = "redisTemplate")
@@ -141,8 +145,8 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
             }
         }
         //聊天室加锁
-        String encryptKey = RedisKeyConstants.CACHE_CHATROOM_ENCRYPT_KEY;
-        Double password = redisTemplate.opsForZSet().score(encryptKey, userId);
+        String encryptKey = RedisKeyConstants.CACHE_CHATROOM_LOCK_KEY;
+        Double password = redisTemplate.opsForZSet().score(encryptKey, roomId);
         if (password != null) {
             //聊天室加锁 游客需要进入
             if (!(roomUserRole.contains(1) || roomUserRole.contains(2) || roomUserRole.contains(3))) {
@@ -351,6 +355,36 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
         this.update(chatroom);
         String key = String.format(RedisKeyConstants.CACHE_CHATROOM_ID_KEY,chatroom.getRoomId());
         redisTemplate.delete(key);
+    }
+
+    @Override
+    public void startTimer(Long userId, Integer roomId, Integer position, Integer num) {
+        String key = String.format(RedisKeyConstants.CACHE_CHATROOM_TIMER_POSITION_KEY,roomId,position);
+        ValueOperations<String, Long> valueOperations = redisTemplate.opsForValue();
+        long time=(num+1)*1000;
+        valueOperations.set(key, System.currentTimeMillis()+time);
+        redisTemplate.expire(key, time, TimeUnit.MILLISECONDS);
+        //发送融云倒计时消息 TODO
+    }
+
+    @Override
+    public void stopTimer(Long userId, Integer roomId, Integer position) {
+        String key = String.format(RedisKeyConstants.CACHE_CHATROOM_TIMER_POSITION_KEY,roomId,position);
+        redisTemplate.delete(key);
+        //发送融云倒计时停止消息 TODO
+    }
+
+    @Override
+    public void lock(Long userId, Integer roomId, Integer pwd) {
+        String key = RedisKeyConstants.CACHE_CHATROOM_LOCK_KEY;
+        intRedisTemplate.opsForZSet().add(key,roomId, pwd);
+
+    }
+
+    @Override
+    public void unlock(Long userId, Integer roomId) {
+        String key = RedisKeyConstants.CACHE_CHATROOM_LOCK_KEY;
+        intRedisTemplate.opsForZSet().remove(key,roomId);
     }
 
     /**

@@ -10,6 +10,7 @@ import com.play.im.service.IChatroomService;
 import com.play.im.service.IChatroomStaffService;
 import com.play.im.view.ChatroomStaffVO;
 import com.play.im.view.ChatroomVO;
+import com.play.ucenter.service.IUserService;
 import com.play.ucenter.view.UserMicVO;
 import com.play.ucenter.view.UserVO;
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,7 +38,8 @@ import java.util.Map;
 public class ChatroomController extends BaseController {
 
     private static final Logger logger = LoggerFactory.getLogger(ChatroomController.class);
-
+    @Resource
+    IUserService userService;
     @Resource
     IChatroomService chatroomService;
     @Resource
@@ -244,7 +247,7 @@ public class ChatroomController extends BaseController {
     }
 
     /**
-     * 编辑房间信息 开关心动值
+     * 编辑房间信息 开关心动值 上下麦方式
      */
     @RequestMapping(value = "/open", method = {RequestMethod.GET})
     public ResultResponse open(@RequestParam(required = true)Integer roomId, Chatroom chatroom) throws ServiceException {
@@ -296,5 +299,86 @@ public class ChatroomController extends BaseController {
         return resultResponse.success(list);
     }
 
+    /**
+     * 麦位倒计时
+     * @param roomId
+     * @param position 麦位
+     * @param num 倒计时多少秒
+     * @return
+     * @throws ServiceException
+     */
+    @RequestMapping(value = "/timer/start", method = {RequestMethod.POST})
+    public ResultResponse startTimer(@RequestParam(required = true) Integer roomId,@RequestParam(required = true) Integer position,@RequestParam(required = true) Integer num) throws ServiceException {
+        Long userId = this.getUserId();
+        chatroomService.startTimer(userId, roomId, position, num);
+        return resultResponse.success();
+    }
 
+    /**
+     * 麦位倒计时停止
+     * @param roomId
+     * @param position 麦位
+     * @return
+     * @throws ServiceException
+     */
+    @RequestMapping(value = "/timer/stop", method = {RequestMethod.POST})
+    public ResultResponse stopTimer(@RequestParam(required = true) Integer roomId,@RequestParam(required = true) Integer position) throws ServiceException {
+        Long userId = this.getUserId();
+        chatroomService.stopTimer(userId, roomId, position);
+        return resultResponse.success();
+    }
+
+    /**
+     * 用户收藏聊天室
+     * @param roomId
+     * @return
+     * @throws ServiceException
+     */
+    @RequestMapping(value = "/collect/add", method = {RequestMethod.POST})
+    public ResultResponse addCollection(@RequestParam(required = true) Integer roomId) throws ServiceException {
+        Long userId = this.getUserId();
+        userService.addCollection(userId, roomId);
+        return resultResponse.success();
+    }
+
+    /**
+     * 用户取消收藏聊天室
+     * @param roomId
+     * @return
+     * @throws ServiceException
+     */
+    @RequestMapping(value = "/collect/remove", method = {RequestMethod.POST})
+    public ResultResponse removeCollection(@RequestParam(required = true) Integer roomId) throws ServiceException {
+        Long userId = this.getUserId();
+        userService.removeCollection(userId, roomId);
+        return resultResponse.success();
+    }
+
+    /**
+     * 聊天室加锁
+     * @param roomId
+     * @param pwd
+     * @return
+     * @throws ServiceException
+     */
+    @RequestMapping(value = "/lock", method = {RequestMethod.POST})
+    public ResultResponse lock(@RequestParam(required = true) Integer roomId,@RequestParam(required = true) Integer pwd) throws ServiceException {
+        Long userId = this.getUserId();
+        chatroomService.lock(userId, roomId,pwd);
+        return resultResponse.success();
+    }
+
+    /**
+     * 聊天室解锁
+     * @param roomId
+     * @param pwd
+     * @return
+     * @throws ServiceException
+     */
+    @RequestMapping(value = "/unlock", method = {RequestMethod.POST})
+    public ResultResponse unlock(@RequestParam(required = true) Integer roomId) throws ServiceException {
+        Long userId = this.getUserId();
+        chatroomService.unlock(userId, roomId);
+        return resultResponse.success();
+    }
 }
