@@ -22,12 +22,12 @@ public class RedisKeyConstants {
     public final static String CACHE_USER_VISIT_KEY = "user_visit_%d";
     //用户所在聊天室key
     public final static String CACHE_USER_CHATROOM_KEY = "user_chatroom";
+    //用户收藏的聊天室key
+    public final static String CACHE_USER_COLLECT_CHATROOM_KEY = "user_collect_chatroom_%d";
     //聊天室key
     public final static String CACHE_CHATROOM_ID_KEY = "chatroom_%d";
     //聊天室黑名单key
     public final static String CACHE_CHATROOM_BLACK_KEY = "chatroom_black_%d";
-    //加密聊天室key
-    public final static String CACHE_CHATROOM_ENCRYPT_KEY = "chatroom_encrypt";
     //聊天室工作人员key
     public final static String CACHE_CHATROOM_STAFF_KEY = "chatroom_staff_%d";
     //聊天室排麦队列key
@@ -40,6 +40,9 @@ public class RedisKeyConstants {
     public final static String CACHE_CHATROOM_USER_NOSPEAK_KEY = "chatroom_user_nospeak_%d";
     //聊天室工作人员key
     public final static String CACHE_CHATROOM_STAFF_TYPE_KEY = "chatroom_staff_type_%d_%d";
-
+    //聊天室麦位倒计时key
+    public final static String CACHE_CHATROOM_TIMER_POSITION_KEY = "chatroom_timer_position_%d_%d";
+    //聊天室锁密码key
+    public final static String CACHE_CHATROOM_LOCK_KEY = "chatroom_lock";
 
 }
