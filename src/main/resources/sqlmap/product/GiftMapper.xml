@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="GiftMapper" >
+  <resultMap id="BaseResultMap" type="com.play.product.model.Gift" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="image_url" property="imageUrl" jdbcType="VARCHAR" />
+    <result column="svga_url" property="svgaUrl" jdbcType="VARCHAR" />
+    <result column="price" property="price" jdbcType="DECIMAL" />
+    <result column="worth" property="worth" jdbcType="DECIMAL" />
+    <result column="sort" property="sort" jdbcType="INTEGER" />
+    <result column="heart_value" property="heartValue" jdbcType="INTEGER" />
+    <result column="status" property="status" jdbcType="BIT" />
+  </resultMap>
+  <sql id="Base_Where">
+    <if test="name != null and name !=''"> and name= #{name}</if>
+  </sql>
+  <sql id="Base_Column_List" >
+    id, name, image_url, svga_url, price, worth, sort, heart_value, status
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from gift
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from gift
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.play.product.model.Gift" >
+    <selectKey resultType="java.lang.Integer" keyProperty="id" order="AFTER" >
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into gift (name, image_url, svga_url, 
+      price, worth, sort, 
+      heart_value, status)
+    values (#{name,jdbcType=VARCHAR}, #{imageUrl,jdbcType=VARCHAR}, #{svgaUrl,jdbcType=VARCHAR}, 
+      #{price,jdbcType=DECIMAL}, #{worth,jdbcType=DECIMAL}, #{sort,jdbcType=INTEGER}, 
+      #{heartValue,jdbcType=INTEGER}, #{status,jdbcType=BIT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.play.product.model.Gift" >
+    <selectKey resultType="java.lang.Integer" keyProperty="id" order="AFTER" >
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into gift
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="name != null" >
+        name,
+      </if>
+      <if test="imageUrl != null" >
+        image_url,
+      </if>
+      <if test="svgaUrl != null" >
+        svga_url,
+      </if>
+      <if test="price != null" >
+        price,
+      </if>
+      <if test="worth != null" >
+        worth,
+      </if>
+      <if test="sort != null" >
+        sort,
+      </if>
+      <if test="heartValue != null" >
+        heart_value,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="imageUrl != null" >
+        #{imageUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="svgaUrl != null" >
+        #{svgaUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="price != null" >
+        #{price,jdbcType=DECIMAL},
+      </if>
+      <if test="worth != null" >
+        #{worth,jdbcType=DECIMAL},
+      </if>
+      <if test="sort != null" >
+        #{sort,jdbcType=INTEGER},
+      </if>
+      <if test="heartValue != null" >
+        #{heartValue,jdbcType=INTEGER},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=BIT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.play.product.model.Gift" >
+    update gift
+    <set >
+      <if test="name != null" >
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="imageUrl != null" >
+        image_url = #{imageUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="svgaUrl != null" >
+        svga_url = #{svgaUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="price != null" >
+        price = #{price,jdbcType=DECIMAL},
+      </if>
+      <if test="worth != null" >
+        worth = #{worth,jdbcType=DECIMAL},
+      </if>
+      <if test="sort != null" >
+        sort = #{sort,jdbcType=INTEGER},
+      </if>
+      <if test="heartValue != null" >
+        heart_value = #{heartValue,jdbcType=INTEGER},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=BIT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.play.product.model.Gift" >
+    update gift
+    set name = #{name,jdbcType=VARCHAR},
+      image_url = #{imageUrl,jdbcType=VARCHAR},
+      svga_url = #{svgaUrl,jdbcType=VARCHAR},
+      price = #{price,jdbcType=DECIMAL},
+      worth = #{worth,jdbcType=DECIMAL},
+      sort = #{sort,jdbcType=INTEGER},
+      heart_value = #{heartValue,jdbcType=INTEGER},
+      status = #{status,jdbcType=BIT}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="getAll" resultMap="BaseResultMap" parameterType="map">
+    select
+    <include refid="Base_Column_List" />
+    from gift where 1=1
+    <include refid="Base_Where" />
+  </select>
+  <select id="pageCount" resultType="java.lang.Integer" parameterType="map">
+    select count(1) from gift where 1=1
+    <include refid="Base_Where" />
+  </select>
+  <select id="pageData" resultMap="BaseResultMap" parameterType="map">
+    select
+    <include refid="Base_Column_List" />
+    from gift where 1=1
+    <include refid="Base_Where" />
+    order by create_date desc
+  </select>
+</mapper>

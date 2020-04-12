@@ -3,367 +3,123 @@ package com.play.product.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.math.BigDecimal;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Gift implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private Long id;
-
-    private Long userId;
+    private Integer id;
 
     /**
-     * 靓号
+     * 礼物名称
      */
-    private Long prettyId;
+    private String name;
 
     /**
-     * 用户昵称
+     * 图标地址
      */
-    private String nickName;
+    private String imageUrl;
 
     /**
-     * 手机号
+     * 特效地址
      */
-    private String mobile;
+    private String svgaUrl;
 
     /**
-     * 登录密码
+     * 价格
      */
-    private String pwd;
+    private BigDecimal price;
 
     /**
-     * 头像地址
+     * 价值
      */
-    private String headUrl;
+    private BigDecimal worth;
 
     /**
-     * 待审核头像地址
+     * 排序
      */
-    private String pendHeadUrl;
+    private Integer sort;
 
     /**
-     * 头像框地址
+     * 心动值
      */
-    private String headwearUrl;
+    private Integer heartValue;
 
     /**
-     * 性别 0：未知 1：男 2：女
+     * 是否上架 1：上架 0：下架
      */
-    private Integer sex;
+    private Boolean status;
 
-    /**
-     * 生日
-     */
-    private Date birthday;
-
-    /**
-     * 省
-     */
-    private String province;
-
-    /**
-     * 市
-     */
-    private String city;
-
-    /**
-     * 签名
-     */
-    private String motto;
-
-    /**
-     * vip等级
-     */
-    private Byte vipLevel;
-
-    /**
-     * vip经验
-     */
-    private Integer vipExp;
-
-    /**
-     * 账号状态 0 正常 1 已冻结
-     */
-    private Boolean freeze;
-
-    /**
-     * 冻结结束时间
-     */
-    private Date freezeExpireTime;
-
-    /**
-     * APP版本
-     */
-    private String appVersion;
-
-    /**
-     * 设备类型 0：Android 1：IOS
-     */
-    private Integer deviceType;
-
-    /**
-     * 设备序列号
-     */
-    private String deviceImei;
-
-    /**
-     * 设备名称
-     */
-    private String deviceName;
-
-    /**
-     * bundleId
-     */
-    private String bundleId;
-
-    /**
-     * 系统版本
-     */
-    private String osVersion;
-
-    /**
-     * 渠道
-     */
-    private Integer channel;
-
-    /**
-     * 是否删除 0 删除 1 未删除
-     */
-    private Boolean deleted;
-
-    /**
-     * 注册时间
-     */
-    private Date createDate;
-
-    /**
-     * 修改时间
-     */
-    private Date updateDate;
-
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public Long getUserId() {
-        return userId;
+    public String getName() {
+        return name;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public Long getPrettyId() {
-        return prettyId;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public void setPrettyId(Long prettyId) {
-        this.prettyId = prettyId;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
-    public String getNickName() {
-        return nickName;
+    public String getSvgaUrl() {
+        return svgaUrl;
     }
 
-    public void setNickName(String nickName) {
-        this.nickName = nickName;
+    public void setSvgaUrl(String svgaUrl) {
+        this.svgaUrl = svgaUrl;
     }
 
-    public String getMobile() {
-        return mobile;
+    public BigDecimal getPrice() {
+        return price;
     }
 
-    public void setMobile(String mobile) {
-        this.mobile = mobile;
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 
-    public String getPwd() {
-        return pwd;
+    public BigDecimal getWorth() {
+        return worth;
     }
 
-    public void setPwd(String pwd) {
-        this.pwd = pwd;
+    public void setWorth(BigDecimal worth) {
+        this.worth = worth;
     }
 
-    public String getHeadUrl() {
-        return headUrl;
+    public Integer getSort() {
+        return sort;
     }
 
-    public void setHeadUrl(String headUrl) {
-        this.headUrl = headUrl;
+    public void setSort(Integer sort) {
+        this.sort = sort;
     }
 
-    public String getHeadwearUrl() {
-        return headwearUrl;
+    public Integer getHeartValue() {
+        return heartValue;
     }
 
-    public void setHeadwearUrl(String headwearUrl) {
-        this.headwearUrl = headwearUrl;
+    public void setHeartValue(Integer heartValue) {
+        this.heartValue = heartValue;
     }
 
-    public Integer getSex() {
-        return sex;
+    public Boolean getStatus() {
+        return status;
     }
 
-    public void setSex(Integer sex) {
-        this.sex = sex;
-    }
-
-    public Date getBirthday() {
-        return birthday;
-    }
-
-    public void setBirthday(Date birthday) {
-        this.birthday = birthday;
-    }
-
-    public String getProvince() {
-        return province;
-    }
-
-    public void setProvince(String province) {
-        this.province = province;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public String getMotto() {
-        return motto;
-    }
-
-    public void setMotto(String motto) {
-        this.motto = motto;
-    }
-
-    public Byte getVipLevel() {
-        return vipLevel;
-    }
-
-    public void setVipLevel(Byte vipLevel) {
-        this.vipLevel = vipLevel;
-    }
-
-    public Integer getVipExp() {
-        return vipExp;
-    }
-
-    public void setVipExp(Integer vipExp) {
-        this.vipExp = vipExp;
-    }
-
-    public Boolean getFreeze() {
-        return freeze;
-    }
-
-    public void setFreeze(Boolean freeze) {
-        this.freeze = freeze;
-    }
-
-    public Date getFreezeExpireTime() {
-        return freezeExpireTime;
-    }
-
-    public void setFreezeExpireTime(Date freezeExpireTime) {
-        this.freezeExpireTime = freezeExpireTime;
-    }
-
-    public String getAppVersion() {
-        return appVersion;
-    }
-
-    public void setAppVersion(String appVersion) {
-        this.appVersion = appVersion;
-    }
-
-    public Integer getDeviceType() {
-        return deviceType;
-    }
-
-    public void setDeviceType(Integer deviceType) {
-        this.deviceType = deviceType;
-    }
-
-    public String getDeviceImei() {
-        return deviceImei;
-    }
-
-    public void setDeviceImei(String deviceImei) {
-        this.deviceImei = deviceImei;
-    }
-
-    public String getDeviceName() {
-        return deviceName;
-    }
-
-    public void setDeviceName(String deviceName) {
-        this.deviceName = deviceName;
-    }
-
-    public String getBundleId() {
-        return bundleId;
-    }
-
-    public void setBundleId(String bundleId) {
-        this.bundleId = bundleId;
-    }
-
-    public String getOsVersion() {
-        return osVersion;
-    }
-
-    public void setOsVersion(String osVersion) {
-        this.osVersion = osVersion;
-    }
-
-    public Integer getChannel() {
-        return channel;
-    }
-
-    public void setChannel(Integer channel) {
-        this.channel = channel;
-    }
-
-    public Boolean getDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(Boolean deleted) {
-        this.deleted = deleted;
-    }
-
-    public Date getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
-    }
-
-    public Date getUpdateDate() {
-        return updateDate;
-    }
-
-    public void setUpdateDate(Date updateDate) {
-        this.updateDate = updateDate;
-    }
-
-    public String getPendHeadUrl() {
-        return pendHeadUrl;
-    }
-
-    public void setPendHeadUrl(String pendHeadUrl) {
-        this.pendHeadUrl = pendHeadUrl;
+    public void setStatus(Boolean status) {
+        this.status = status;
     }
 }
