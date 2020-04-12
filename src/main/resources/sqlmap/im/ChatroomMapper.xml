@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.play.im.model.ChatroomMapper" >
+<mapper namespace="ChatroomMapper" >
   <resultMap id="BaseResultMap" type="com.play.im.model.Chatroom" >
     <id column="id" property="id" jdbcType="INTEGER" />
     <result column="room_id" property="roomId" jdbcType="INTEGER" />
@@ -203,7 +203,7 @@
         create_date = #{createDate,jdbcType=TIMESTAMP},
       </if>
     </set>
-    where id = #{id,jdbcType=INTEGER}
+    where room_id = #{roomId,jdbcType=INTEGER}
   </update>
   <update id="updateByPrimaryKey" parameterType="com.play.im.model.Chatroom" >
     update chatroom
@@ -222,7 +222,7 @@
       guild_id = #{guildId,jdbcType=INTEGER},
       update_date = #{updateDate,jdbcType=TIMESTAMP},
       create_date = #{createDate,jdbcType=TIMESTAMP}
-    where id = #{id,jdbcType=INTEGER}
+    where room_id = #{roomId,jdbcType=INTEGER}
   </update>
   <select id="getAll" resultMap="BaseResultMap" parameterType="map">
     select
@@ -241,4 +241,8 @@
     <include refid="Base_Where" />
     order by create_date desc
   </select>
+
+  <update id="updateRoomStatus" parameterType="map" >
+    update chatroom set status = #{status,jdbcType=BIT} where room_id = #{roomId,jdbcType=INTEGER}
+  </update>
 </mapper>

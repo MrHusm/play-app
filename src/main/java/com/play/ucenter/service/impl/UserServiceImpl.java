@@ -54,6 +54,8 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
     private RedisTemplate<String, UserOnlineVO> userOnlineRedisTemplate;
     @Resource(name = "redisTemplate")
     private RedisTemplate<String, Long> userRelRedisTemplate;
+    @Resource(name = "redisTemplate")
+    private RedisTemplate<String, Integer> redisTemplate;
 
     @Override
     public IBaseDao<User> getBaseDao() {
@@ -458,5 +460,17 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
             return userId;
         }
         return -1L;
+    }
+
+    @Override
+    public void addCollection(Long userId, Integer roomId) {
+        String key = String.format(RedisKeyConstants.CACHE_USER_COLLECT_CHATROOM_KEY,userId);
+        redisTemplate.opsForList().leftPush(key,roomId);
+    }
+
+    @Override
+    public void removeCollection(Long userId, Integer roomId) {
+        String key = String.format(RedisKeyConstants.CACHE_USER_COLLECT_CHATROOM_KEY,userId);
+        redisTemplate.opsForList().remove(key,0,roomId);
     }
 }

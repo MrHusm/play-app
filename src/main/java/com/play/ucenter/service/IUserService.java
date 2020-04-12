@@ -121,4 +121,18 @@ public interface IUserService extends IBaseService<User,Long> {
     String getOnlineTime(Long userId);
 
     Long verifyToken(String token);
+
+    /**
+     * 聊天室添加收藏
+     * @param userId
+     * @param roomId
+     */
+    void addCollection(Long userId, Integer roomId);
+
+    /**
+     * 取消聊天室收藏
+     * @param userId
+     * @param roomId
+     */
+    void removeCollection(Long userId, Integer roomId);
 }

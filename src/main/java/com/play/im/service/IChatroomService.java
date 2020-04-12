@@ -150,4 +150,57 @@ public interface IChatroomService extends IBaseService<Chatroom,Long> {
      * @param userId
      */
     void leave(Integer roomId, Long userId);
+
+    /**
+     * 聊天室关闭
+     * @param userId
+     * @param roomId
+     */
+    void close(Long userId, Integer roomId);
+
+    /**
+     * 聊天室开启
+     * @param userId
+     * @param roomId
+     */
+    void open(Long userId, Integer roomId);
+
+    /**
+     * 修改聊天室信息
+     * @param chatroom
+     */
+    void updateChatroom(Chatroom chatroom);
+
+    /**
+     * 开始麦位倒计时
+     * @param userId
+     * @param roomId
+     * @param position
+     * @param num
+     */
+    void startTimer(Long userId, Integer roomId, Integer position, Integer num);
+
+    /**
+     * 停止麦位倒计时
+     * @param userId
+     * @param roomId
+     * @param position
+     */
+    void stopTimer(Long userId, Integer roomId, Integer position);
+
+
+    /**
+     * 聊天室加锁
+     * @param userId
+     * @param roomId
+     * @param pwd
+     */
+    void lock(Long userId, Integer roomId, Integer pwd);
+
+    /**
+     * 聊天室解锁
+     * @param userId
+     * @param roomId
+     */
+    void unlock(Long userId, Integer roomId);
 }
