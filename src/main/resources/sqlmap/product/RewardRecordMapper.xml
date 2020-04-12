@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="RewardRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.play.product.model.RewardRecord" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="order_id" property="orderId" jdbcType="BIGINT" />
+    <result column="sender_id" property="senderId" jdbcType="BIGINT" />
+    <result column="receiver_id" property="receiverId" jdbcType="BIGINT" />
+    <result column="room_owner_id" property="roomOwnerId" jdbcType="BIGINT" />
+    <result column="gift_id" property="giftId" jdbcType="INTEGER" />
+    <result column="gift_name" property="giftName" jdbcType="VARCHAR" />
+    <result column="gift_num" property="giftNum" jdbcType="INTEGER" />
+    <result column="gift_price" property="giftPrice" jdbcType="DECIMAL" />
+    <result column="gift_total_price" property="giftTotalPrice" jdbcType="DECIMAL" />
+    <result column="receiver_income" property="receiverIncome" jdbcType="DECIMAL" />
+    <result column="room_owner_income" property="roomOwnerIncome" jdbcType="DECIMAL" />
+    <result column="platform_income" property="platformIncome" jdbcType="DECIMAL" />
+    <result column="pay_type" property="payType" jdbcType="BIT" />
+    <result column="creator" property="creator" jdbcType="BIGINT" />
+    <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, order_id, sender_id, receiver_id, room_owner_id, gift_id, gift_name, gift_num, 
+    gift_price, gift_total_price, receiver_income, room_owner_income, platform_income, 
+    pay_type, creator, create_date
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from reward_record
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from reward_record
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.play.product.model.RewardRecord" >
+    <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into reward_record (order_id, sender_id, receiver_id, 
+      room_owner_id, gift_id, gift_name, 
+      gift_num, gift_price, gift_total_price, 
+      receiver_income, room_owner_income, platform_income, 
+      pay_type, creator, create_date
+      )
+    values (#{orderId,jdbcType=BIGINT}, #{senderId,jdbcType=BIGINT}, #{receiverId,jdbcType=BIGINT}, 
+      #{roomOwnerId,jdbcType=BIGINT}, #{giftId,jdbcType=INTEGER}, #{giftName,jdbcType=VARCHAR}, 
+      #{giftNum,jdbcType=INTEGER}, #{giftPrice,jdbcType=DECIMAL}, #{giftTotalPrice,jdbcType=DECIMAL}, 
+      #{receiverIncome,jdbcType=DECIMAL}, #{roomOwnerIncome,jdbcType=DECIMAL}, #{platformIncome,jdbcType=DECIMAL}, 
+      #{payType,jdbcType=BIT}, #{creator,jdbcType=BIGINT}, #{createDate,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.play.product.model.RewardRecord" >
+    <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into reward_record
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="orderId != null" >
+        order_id,
+      </if>
+      <if test="senderId != null" >
+        sender_id,
+      </if>
+      <if test="receiverId != null" >
+        receiver_id,
+      </if>
+      <if test="roomOwnerId != null" >
+        room_owner_id,
+      </if>
+      <if test="giftId != null" >
+        gift_id,
+      </if>
+      <if test="giftName != null" >
+        gift_name,
+      </if>
+      <if test="giftNum != null" >
+        gift_num,
+      </if>
+      <if test="giftPrice != null" >
+        gift_price,
+      </if>
+      <if test="giftTotalPrice != null" >
+        gift_total_price,
+      </if>
+      <if test="receiverIncome != null" >
+        receiver_income,
+      </if>
+      <if test="roomOwnerIncome != null" >
+        room_owner_income,
+      </if>
+      <if test="platformIncome != null" >
+        platform_income,
+      </if>
+      <if test="payType != null" >
+        pay_type,
+      </if>
+      <if test="creator != null" >
+        creator,
+      </if>
+      <if test="createDate != null" >
+        create_date,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="orderId != null" >
+        #{orderId,jdbcType=BIGINT},
+      </if>
+      <if test="senderId != null" >
+        #{senderId,jdbcType=BIGINT},
+      </if>
+      <if test="receiverId != null" >
+        #{receiverId,jdbcType=BIGINT},
+      </if>
+      <if test="roomOwnerId != null" >
+        #{roomOwnerId,jdbcType=BIGINT},
+      </if>
+      <if test="giftId != null" >
+        #{giftId,jdbcType=INTEGER},
+      </if>
+      <if test="giftName != null" >
+        #{giftName,jdbcType=VARCHAR},
+      </if>
+      <if test="giftNum != null" >
+        #{giftNum,jdbcType=INTEGER},
+      </if>
+      <if test="giftPrice != null" >
+        #{giftPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="giftTotalPrice != null" >
+        #{giftTotalPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="receiverIncome != null" >
+        #{receiverIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="roomOwnerIncome != null" >
+        #{roomOwnerIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="platformIncome != null" >
+        #{platformIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="payType != null" >
+        #{payType,jdbcType=BIT},
+      </if>
+      <if test="creator != null" >
+        #{creator,jdbcType=BIGINT},
+      </if>
+      <if test="createDate != null" >
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.play.product.model.RewardRecord" >
+    update reward_record
+    <set >
+      <if test="orderId != null" >
+        order_id = #{orderId,jdbcType=BIGINT},
+      </if>
+      <if test="senderId != null" >
+        sender_id = #{senderId,jdbcType=BIGINT},
+      </if>
+      <if test="receiverId != null" >
+        receiver_id = #{receiverId,jdbcType=BIGINT},
+      </if>
+      <if test="roomOwnerId != null" >
+        room_owner_id = #{roomOwnerId,jdbcType=BIGINT},
+      </if>
+      <if test="giftId != null" >
+        gift_id = #{giftId,jdbcType=INTEGER},
+      </if>
+      <if test="giftName != null" >
+        gift_name = #{giftName,jdbcType=VARCHAR},
+      </if>
+      <if test="giftNum != null" >
+        gift_num = #{giftNum,jdbcType=INTEGER},
+      </if>
+      <if test="giftPrice != null" >
+        gift_price = #{giftPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="giftTotalPrice != null" >
+        gift_total_price = #{giftTotalPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="receiverIncome != null" >
+        receiver_income = #{receiverIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="roomOwnerIncome != null" >
+        room_owner_income = #{roomOwnerIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="platformIncome != null" >
+        platform_income = #{platformIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="payType != null" >
+        pay_type = #{payType,jdbcType=BIT},
+      </if>
+      <if test="creator != null" >
+        creator = #{creator,jdbcType=BIGINT},
+      </if>
+      <if test="createDate != null" >
+        create_date = #{createDate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.play.product.model.RewardRecord" >
+    update reward_record
+    set order_id = #{orderId,jdbcType=BIGINT},
+      sender_id = #{senderId,jdbcType=BIGINT},
+      receiver_id = #{receiverId,jdbcType=BIGINT},
+      room_owner_id = #{roomOwnerId,jdbcType=BIGINT},
+      gift_id = #{giftId,jdbcType=INTEGER},
+      gift_name = #{giftName,jdbcType=VARCHAR},
+      gift_num = #{giftNum,jdbcType=INTEGER},
+      gift_price = #{giftPrice,jdbcType=DECIMAL},
+      gift_total_price = #{giftTotalPrice,jdbcType=DECIMAL},
+      receiver_income = #{receiverIncome,jdbcType=DECIMAL},
+      room_owner_income = #{roomOwnerIncome,jdbcType=DECIMAL},
+      platform_income = #{platformIncome,jdbcType=DECIMAL},
+      pay_type = #{payType,jdbcType=BIT},
+      creator = #{creator,jdbcType=BIGINT},
+      create_date = #{createDate,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <select id="getAll" resultMap="BaseResultMap" parameterType="map">
+    select
+    <include refid="Base_Column_List" />
+    from reward_record where 1=1
+    <include refid="Base_Where" />
+  </select>
+  <select id="pageCount" resultType="java.lang.Integer" parameterType="map">
+    select count(1) from reward_record where 1=1
+    <include refid="Base_Where" />
+  </select>
+  <select id="pageData" resultMap="BaseResultMap" parameterType="map">
+    select
+    <include refid="Base_Column_List" />
+    from reward_record where 1=1
+    <include refid="Base_Where" />
+    order by create_date desc
+  </select>
+</mapper>
