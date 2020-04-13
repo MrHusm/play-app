@@ -4,15 +4,19 @@ import com.play.base.controller.BaseController;
 import com.play.base.exception.ServiceException;
 import com.play.base.utils.ResultResponse;
 import com.play.product.service.IGiftService;
-import com.sun.istack.internal.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author hushengmeng
@@ -41,14 +45,30 @@ public class GiftController extends BaseController {
      * @throws ServiceException
      */
     @ResponseBody
-    @RequestMapping(value = "/reward", method = {RequestMethod.POST})
-    public ResultResponse reward(@RequestParam(required=true) Integer giftId, @RequestParam(required=true) Integer giftNum,
-                                 @RequestParam(required=true) String targetUserIds,@RequestParam(required=false) String positions,
-                                 @RequestParam(required=true) Integer roomId,@RequestParam(required=false)Integer payType) throws ServiceException {
+    @RequestMapping(value = "/send", method = {RequestMethod.POST})
+    public ResultResponse send(@RequestParam(required = true) Integer giftId, @RequestParam(required = true) Integer giftNum,
+                               @RequestParam(required = true) String targetUserIds, @RequestParam(required = true) String positions,
+                               @RequestParam(required = true) Integer roomId, @RequestParam(required = false) Integer payType) throws ServiceException {
         Long userId = this.getUserId();
-
+        List<Long> targetUserIdList = new ArrayList<Long>();
+        for (String targetUserId : targetUserIds.split(",")) {
+            targetUserIdList.add(Long.parseLong(targetUserId));
+        }
+        List<Integer> positionList = new ArrayList<Integer>();
+        for (String position : positions.split(",")) {
+            positionList.add(Integer.parseInt(position));
+        }
+        if (positions != null) {
+            positions.replace("0", "");
+        }
+        if (payType == null) {
+            payType = 0;
+        }
+        if (giftNum <= 0) {
+            giftNum = 1;
+        }
+        giftService.sendGift(userId, roomId, giftId, giftNum, targetUserIdList, positionList, payType);
         return resultResponse.success();
+
     }
-
-
 }

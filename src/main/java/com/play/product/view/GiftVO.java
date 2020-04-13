@@ -1,4 +1,4 @@
-package com.play.product.model;
+package com.play.product.view;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Gift implements Serializable {
+public class GiftVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Integer id;

@@ -3,10 +3,11 @@
 <mapper namespace="RewardRecordMapper" >
   <resultMap id="BaseResultMap" type="com.play.product.model.RewardRecord" >
     <id column="id" property="id" jdbcType="BIGINT" />
-    <result column="order_id" property="orderId" jdbcType="BIGINT" />
+    <result column="order_no" property="orderNo" jdbcType="VARCHAR"/>
     <result column="sender_id" property="senderId" jdbcType="BIGINT" />
     <result column="receiver_id" property="receiverId" jdbcType="BIGINT" />
     <result column="room_owner_id" property="roomOwnerId" jdbcType="BIGINT" />
+    <result column="room_id" property="roomId" jdbcType="INTEGER"/>
     <result column="gift_id" property="giftId" jdbcType="INTEGER" />
     <result column="gift_name" property="giftName" jdbcType="VARCHAR" />
     <result column="gift_num" property="giftNum" jdbcType="INTEGER" />
@@ -20,7 +21,7 @@
     <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
   </resultMap>
   <sql id="Base_Column_List" >
-    id, order_id, sender_id, receiver_id, room_owner_id, gift_id, gift_name, gift_num, 
+    id, order_no, sender_id, receiver_id, room_owner_id, room_id, gift_id, gift_name, gift_num,
     gift_price, gift_total_price, receiver_income, room_owner_income, platform_income, 
     pay_type, creator, create_date
   </sql>
@@ -35,30 +36,44 @@
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" parameterType="com.play.product.model.RewardRecord" >
-    <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
-      SELECT LAST_INSERT_ID()
-    </selectKey>
-    insert into reward_record (order_id, sender_id, receiver_id, 
-      room_owner_id, gift_id, gift_name, 
+    insert into reward_record (order_no, sender_id, receiver_id,
+    room_owner_id, room_id,gift_id, gift_name,
       gift_num, gift_price, gift_total_price, 
       receiver_income, room_owner_income, platform_income, 
       pay_type, creator, create_date
       )
-    values (#{orderId,jdbcType=BIGINT}, #{senderId,jdbcType=BIGINT}, #{receiverId,jdbcType=BIGINT}, 
-      #{roomOwnerId,jdbcType=BIGINT}, #{giftId,jdbcType=INTEGER}, #{giftName,jdbcType=VARCHAR}, 
+    values (#{orderNo,jdbcType=VARCHAR}, #{senderId,jdbcType=BIGINT}, #{receiverId,jdbcType=BIGINT},
+    #{roomOwnerId,jdbcType=BIGINT}, #{roomId,jdbcType=INTEGER}, #{giftId,jdbcType=INTEGER},
+    #{giftName,jdbcType=VARCHAR},
       #{giftNum,jdbcType=INTEGER}, #{giftPrice,jdbcType=DECIMAL}, #{giftTotalPrice,jdbcType=DECIMAL}, 
       #{receiverIncome,jdbcType=DECIMAL}, #{roomOwnerIncome,jdbcType=DECIMAL}, #{platformIncome,jdbcType=DECIMAL}, 
       #{payType,jdbcType=BIT}, #{creator,jdbcType=BIGINT}, #{createDate,jdbcType=TIMESTAMP}
       )
   </insert>
+  <insert id="insertBatch" parameterType="java.util.List">
+    insert into reward_record (order_no, sender_id, receiver_id,
+    room_owner_id, room_id,gift_id, gift_name,
+    gift_num, gift_price, gift_total_price,
+    receiver_income, room_owner_income, platform_income,
+    pay_type, creator, create_date
+    )
+    values
+    <foreach collection="list" item="item" index="index" separator=",">
+      (#{item.orderNo,jdbcType=VARCHAR}, #{item.senderId,jdbcType=BIGINT}, #{item.receiverId,jdbcType=BIGINT},
+      #{item.roomOwnerId,jdbcType=BIGINT}, #{item.roomId,jdbcType=INTEGER}, #{item.giftId,jdbcType=INTEGER},
+      #{item.giftName,jdbcType=VARCHAR},
+      #{item.giftNum,jdbcType=INTEGER}, #{item.giftPrice,jdbcType=DECIMAL}, #{item.giftTotalPrice,jdbcType=DECIMAL},
+      #{item.receiverIncome,jdbcType=DECIMAL}, #{item.roomOwnerIncome,jdbcType=DECIMAL},
+      #{item.platformIncome,jdbcType=DECIMAL},
+      #{item.payType,jdbcType=BIT}, #{item.creator,jdbcType=BIGINT}, #{item.createDate,jdbcType=TIMESTAMP}
+      )
+    </foreach>
+  </insert>
   <insert id="insertSelective" parameterType="com.play.product.model.RewardRecord" >
-    <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
-      SELECT LAST_INSERT_ID()
-    </selectKey>
     insert into reward_record
     <trim prefix="(" suffix=")" suffixOverrides="," >
-      <if test="orderId != null" >
-        order_id,
+      <if test="orderNo != null">
+        order_no,
       </if>
       <if test="senderId != null" >
         sender_id,
@@ -68,6 +83,9 @@
       </if>
       <if test="roomOwnerId != null" >
         room_owner_id,
+      </if>
+      <if test="roomId != null">
+        room_id,
       </if>
       <if test="giftId != null" >
         gift_id,
@@ -104,8 +122,8 @@
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
-      <if test="orderId != null" >
-        #{orderId,jdbcType=BIGINT},
+      <if test="orderNo != null">
+        #{orderNo,jdbcType=VARCHAR},
       </if>
       <if test="senderId != null" >
         #{senderId,jdbcType=BIGINT},
@@ -115,6 +133,9 @@
       </if>
       <if test="roomOwnerId != null" >
         #{roomOwnerId,jdbcType=BIGINT},
+      </if>
+      <if test="roomId != null">
+        #{roomId,jdbcType=INTEGER},
       </if>
       <if test="giftId != null" >
         #{giftId,jdbcType=INTEGER},
@@ -154,8 +175,8 @@
   <update id="updateByPrimaryKeySelective" parameterType="com.play.product.model.RewardRecord" >
     update reward_record
     <set >
-      <if test="orderId != null" >
-        order_id = #{orderId,jdbcType=BIGINT},
+      <if test="orderNo != null">
+        order_no = #{orderNo,jdbcType=VARCHAR},
       </if>
       <if test="senderId != null" >
         sender_id = #{senderId,jdbcType=BIGINT},
@@ -165,6 +186,9 @@
       </if>
       <if test="roomOwnerId != null" >
         room_owner_id = #{roomOwnerId,jdbcType=BIGINT},
+      </if>
+      <if test="roomId != null">
+        room_id = #{roomId,jdbcType=INTEGER},
       </if>
       <if test="giftId != null" >
         gift_id = #{giftId,jdbcType=INTEGER},
@@ -204,10 +228,11 @@
   </update>
   <update id="updateByPrimaryKey" parameterType="com.play.product.model.RewardRecord" >
     update reward_record
-    set order_id = #{orderId,jdbcType=BIGINT},
+    set order_no = #{orderNo,jdbcType=VARCHAR},
       sender_id = #{senderId,jdbcType=BIGINT},
       receiver_id = #{receiverId,jdbcType=BIGINT},
       room_owner_id = #{roomOwnerId,jdbcType=BIGINT},
+    room_id = #{roomId,jdbcType=INTEGER},
       gift_id = #{giftId,jdbcType=INTEGER},
       gift_name = #{giftName,jdbcType=VARCHAR},
       gift_num = #{giftNum,jdbcType=INTEGER},

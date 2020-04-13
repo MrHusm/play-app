@@ -1,7 +1,5 @@
 package com.play.im.view;
 
-import java.util.Date;
-
 public class ChatroomVO {
     /**
      * 聊天室ID
@@ -37,6 +35,11 @@ public class ChatroomVO {
      * 1：开启 2：关闭 3：冻结
      */
     private Integer status;
+
+    /**
+     * 聊天室所属人id
+     */
+    private Long ownnerId;
 
     /**
      * 0:隐藏心动值 1 显示心动值
@@ -123,5 +126,21 @@ public class ChatroomVO {
 
     public void setMicType(Integer micType) {
         this.micType = micType;
+    }
+
+    public Integer getRoomId() {
+        return roomId;
+    }
+
+    public void setRoomId(Integer roomId) {
+        this.roomId = roomId;
+    }
+
+    public Long getOwnnerId() {
+        return ownnerId;
+    }
+
+    public void setOwnnerId(Long ownnerId) {
+        this.ownnerId = ownnerId;
     }
 }

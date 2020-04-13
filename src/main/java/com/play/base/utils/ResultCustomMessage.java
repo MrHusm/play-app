@@ -26,4 +26,10 @@ public class ResultCustomMessage extends ResultMessage{
     public static final ResultCustomMessage F1009 = new ResultCustomMessage(1009, "加入聊天室失败，密码错误");
 
     public static final ResultCustomMessage F1010 = new ResultCustomMessage(1010, "当前麦位已有人");
+
+    public static final ResultCustomMessage F1011 = new ResultCustomMessage(1011, "礼物已下架");
+
+    public static final ResultCustomMessage F1012 = new ResultCustomMessage(1012, "余额不足");
+
+    public static final ResultCustomMessage F1013 = new ResultCustomMessage(1013, "礼物数量不足");
 }

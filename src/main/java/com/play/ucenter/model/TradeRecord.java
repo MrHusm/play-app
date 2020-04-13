@@ -12,7 +12,7 @@ public class TradeRecord implements Serializable {
 
     private Long id;
 
-    private Long orderId;
+    private String orderNo;
 
     /**
      * 用户id
@@ -27,7 +27,7 @@ public class TradeRecord implements Serializable {
     /**
      * 账户类型 1：金币 2：银币
      */
-    private Boolean accountType;
+    private Integer accountType;
 
     /**
      * 交易时间
@@ -51,12 +51,12 @@ public class TradeRecord implements Serializable {
         this.id = id;
     }
 
-    public Long getOrderId() {
-        return orderId;
+    public String getOrderNo() {
+        return orderNo;
     }
 
-    public void setOrderId(Long orderId) {
-        this.orderId = orderId;
+    public void setOrderNo(String orderNo) {
+        this.orderNo = orderNo;
     }
 
     public Long getUserId() {
@@ -75,11 +75,11 @@ public class TradeRecord implements Serializable {
         this.type = type;
     }
 
-    public Boolean getAccountType() {
+    public Integer getAccountType() {
         return accountType;
     }
 
-    public void setAccountType(Boolean accountType) {
+    public void setAccountType(Integer accountType) {
         this.accountType = accountType;
     }
 

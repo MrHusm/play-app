@@ -8,6 +8,7 @@ import com.play.ucenter.service.IUserAccountService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 
 /**
  * Created by hushengmeng on 2020/3/30.
@@ -26,5 +27,10 @@ public class UserAccountServiceImpl extends BaseServiceImpl<UserAccount, Long> i
     @Override
     public UserAccount getByUserId(Long userId) {
         return this.findUniqueByParams("userId",userId);
+    }
+
+    @Override
+    public int giftPay(Long userId, BigDecimal amount) {
+        return userAccountDao.giftPay(userId, amount);
     }
 }

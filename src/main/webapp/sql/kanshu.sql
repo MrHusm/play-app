@@ -2,7 +2,7 @@
 DROP TABLE IF EXISTS `alipay_order`;
 
 CREATE TABLE `alipay_order` (
-  `alipay_order_id` BIGINT(11) NOT NULL AUTO_INCREMENT,
+  `alipay_order_no` BIGINT(11) NOT NULL AUTO_INCREMENT,
   `user_id` BIGINT(11) NOT NULL COMMENT '用户id',
   `product_id` BIGINT(11) NOT NULL COMMENT '购买的产品ID',
   `WIDout_trade_no` VARCHAR(100) COLLATE utf8_bin NOT NULL COMMENT '订单号',
@@ -14,7 +14,7 @@ CREATE TABLE `alipay_order` (
   `comment` VARCHAR(200) COLLATE utf8_bin DEFAULT NULL COMMENT '备注',
   `create_date` DATETIME NOT NULL,
   `update_date` DATETIME NOT NULL,
-  PRIMARY KEY (`alipay_order_id`),
+  PRIMARY KEY (`alipay_order_no`),
   UNIQUE KEY `idx_out_trade_no` (`WIDout_trade_no`),
   KEY `idx_uid` (`user_id`),
   KEY `idx_product_id` (`product_id`),

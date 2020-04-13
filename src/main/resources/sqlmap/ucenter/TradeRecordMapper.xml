@@ -3,7 +3,7 @@
 <mapper namespace="TradeRecordMapper" >
   <resultMap id="BaseResultMap" type="com.play.ucenter.model.TradeRecord" >
     <id column="id" property="id" jdbcType="BIGINT" />
-    <result column="order_id" property="orderId" jdbcType="BIGINT" />
+    <result column="order_no" property="orderNo" jdbcType="VARCHAR"/>
     <result column="user_id" property="userId" jdbcType="BIGINT" />
     <result column="type" property="type" jdbcType="INTEGER" />
     <result column="account_type" property="accountType" jdbcType="BIT" />
@@ -16,7 +16,7 @@
     <if test="userId != null"> and user_id= #{userId}</if>
   </sql>
   <sql id="Base_Column_List" >
-    id, order_id, user_id, type, account_type, trade_time, amount, creator, create_date
+    id, order_no, user_id, type, account_type, trade_time, amount, creator, create_date
   </sql>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
     select 
@@ -32,11 +32,11 @@
     <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
       SELECT LAST_INSERT_ID()
     </selectKey>
-    insert into trade_record (order_id, user_id, type, 
-      account_type, trade_time, amount, 
+    insert into trade_record (order_no, user_id, type,
+    account_type, trade_time, amount,
       creator, create_date)
-    values (#{orderId,jdbcType=BIGINT}, #{userId,jdbcType=BIGINT}, #{type,jdbcType=INTEGER}, 
-      #{accountType,jdbcType=BIT}, #{tradeTime,jdbcType=TIMESTAMP}, #{amount,jdbcType=DECIMAL}, 
+    values (#{orderNo,jdbcType=VARCHAR}, #{userId,jdbcType=BIGINT}, #{type,jdbcType=INTEGER},
+    #{accountType,jdbcType=BIT}, #{tradeTime,jdbcType=TIMESTAMP}, #{amount,jdbcType=DECIMAL},
       #{creator,jdbcType=BIGINT}, #{createDate,jdbcType=TIMESTAMP})
   </insert>
   <insert id="insertSelective" parameterType="com.play.ucenter.model.TradeRecord" >
@@ -45,8 +45,8 @@
     </selectKey>
     insert into trade_record
     <trim prefix="(" suffix=")" suffixOverrides="," >
-      <if test="orderId != null" >
-        order_id,
+      <if test="orderNo != null">
+        order_no,
       </if>
       <if test="userId != null" >
         user_id,
@@ -71,8 +71,8 @@
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
-      <if test="orderId != null" >
-        #{orderId,jdbcType=BIGINT},
+      <if test="orderNo != null">
+        #{orderNo,jdbcType=VARCHAR},
       </if>
       <if test="userId != null" >
         #{userId,jdbcType=BIGINT},
@@ -100,8 +100,8 @@
   <update id="updateByPrimaryKeySelective" parameterType="com.play.ucenter.model.TradeRecord" >
     update trade_record
     <set >
-      <if test="orderId != null" >
-        order_id = #{orderId,jdbcType=BIGINT},
+      <if test="orderNo != null">
+        order_no = #{orderNo,jdbcType=VARCHAR},
       </if>
       <if test="userId != null" >
         user_id = #{userId,jdbcType=BIGINT},
@@ -129,7 +129,7 @@
   </update>
   <update id="updateByPrimaryKey" parameterType="com.play.ucenter.model.TradeRecord" >
     update trade_record
-    set order_id = #{orderId,jdbcType=BIGINT},
+    set order_no = #{orderNo,jdbcType=VARCHAR},
       user_id = #{userId,jdbcType=BIGINT},
       type = #{type,jdbcType=INTEGER},
       account_type = #{accountType,jdbcType=BIT},

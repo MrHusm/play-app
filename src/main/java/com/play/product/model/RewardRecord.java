@@ -15,7 +15,7 @@ public class RewardRecord implements Serializable {
     /**
      * 订单号
      */
-    private Long orderId;
+    private String orderNo;
 
     /**
      * 打赏人id
@@ -31,6 +31,11 @@ public class RewardRecord implements Serializable {
      * 聊天室拥有人id
      */
     private Long roomOwnerId;
+
+    /**
+     * 聊天室id
+     */
+    private Integer roomId;
 
     /**
      * 礼物id
@@ -75,7 +80,7 @@ public class RewardRecord implements Serializable {
     /**
      * 支付方式 0：金币 1：背包
      */
-    private Boolean payType;
+    private Integer payType;
 
     /**
      * 创建人
@@ -95,12 +100,12 @@ public class RewardRecord implements Serializable {
         this.id = id;
     }
 
-    public Long getOrderId() {
-        return orderId;
+    public String getOrderNo() {
+        return orderNo;
     }
 
-    public void setOrderId(Long orderId) {
-        this.orderId = orderId;
+    public void setOrderNo(String orderNo) {
+        this.orderNo = orderNo;
     }
 
     public Long getSenderId() {
@@ -191,11 +196,11 @@ public class RewardRecord implements Serializable {
         this.platformIncome = platformIncome;
     }
 
-    public Boolean getPayType() {
+    public Integer getPayType() {
         return payType;
     }
 
-    public void setPayType(Boolean payType) {
+    public void setPayType(Integer payType) {
         this.payType = payType;
     }
 
@@ -213,5 +218,13 @@ public class RewardRecord implements Serializable {
 
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
+    }
+
+    public Integer getRoomId() {
+        return roomId;
+    }
+
+    public void setRoomId(Integer roomId) {
+        this.roomId = roomId;
     }
 }
