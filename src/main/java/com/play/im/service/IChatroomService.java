@@ -7,6 +7,7 @@ import com.play.im.view.ChatroomVO;
 import com.play.ucenter.view.UserMicVO;
 import com.play.ucenter.view.UserVO;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface IChatroomService extends IBaseService<Chatroom,Long> {
@@ -203,4 +204,21 @@ public interface IChatroomService extends IBaseService<Chatroom,Long> {
      * @param roomId
      */
     void unlock(Long userId, Integer roomId);
+
+    /**
+     * 增加麦位心动值
+     * @param roomId
+     * @param positions
+     * @param heartValue
+     */
+    void addMicHeart(Integer roomId, List<Integer> positions, Integer heartValue);
+
+    /**
+     * 增加聊天室贡献和魅力值
+     * @param roomId
+     * @param userId
+     * @param targetUserIds
+     * @param worth
+     */
+    void addUserRoomRank(Integer roomId, Long userId, List<Long> targetUserIds, Integer worth);
 }

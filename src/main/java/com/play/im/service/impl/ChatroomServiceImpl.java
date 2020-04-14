@@ -5,6 +5,7 @@ import com.play.base.dao.IBaseDao;
 import com.play.base.exception.ServiceException;
 import com.play.base.service.impl.BaseServiceImpl;
 import com.play.base.utils.BeanUtils;
+import com.play.base.utils.DateUtil;
 import com.play.base.utils.ResultCustomMessage;
 import com.play.im.dao.IChatroomDao;
 import com.play.im.model.Chatroom;
@@ -24,6 +25,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -387,6 +389,52 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
         intRedisTemplate.opsForZSet().remove(key,roomId);
     }
 
+    @Override
+    public void addMicHeart(Integer roomId, List<Integer> positions, Integer heartValue) {
+        String key =String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_HEART_KEY,roomId);
+        for(Integer position : positions){
+            intRedisTemplate.opsForHash().increment(key,position,heartValue);
+        }
+        //发送麦位心动值变化消息 TODO
+    }
+
+    /**
+     * 送礼增加用户财富魅力值
+     * @param roomId
+     * @param userId
+     * @param targetUserIds
+     * @param worth
+     */
+    @Override
+    public void addUserRoomRank(Integer roomId, Long userId, List<Long> targetUserIds, Integer worth) {
+        //查询月榜 周榜 日榜记录的key
+        //月榜
+        Date date = new Date();
+        Integer week = DateUtil.getWeek(date);
+        String day = DateUtil.format(date,"yyyyMMdd");
+        String month = DateUtil.format(date,"yyyyMM");
+        String year = DateUtil.format(date,"yyyy");
+
+
+        String sendMonthKey = String.format(RedisKeyConstants.CACHE_CHATROOM_RANK_SEND_MONTH_KEY,roomId,month);
+        String sendWeekKey = String.format(RedisKeyConstants.CACHE_CHATROOM_RANK_SEND_WEEK_KEY,roomId,year,week);
+        String sendDayKey = String.format(RedisKeyConstants.CACHE_CHATROOM_RANK_SEND_DAY_KEY,roomId,day);
+
+        String receiveMonthKey = String.format(RedisKeyConstants.CACHE_CHATROOM_RANK_RECEIVE_MONTH_KEY,roomId,month);
+        String receiveWeekKey = String.format(RedisKeyConstants.CACHE_CHATROOM_RANK_RECEIVE_WEEK_KEY,roomId,year,week);
+        String receiveDayKey = String.format(RedisKeyConstants.CACHE_CHATROOM_RANK_RECEIVE_DAY_KEY,roomId,day);;
+
+        redisTemplate.opsForZSet().incrementScore(sendDayKey,userId,worth);
+        redisTemplate.opsForZSet().incrementScore(sendWeekKey,userId,worth);
+        redisTemplate.opsForZSet().incrementScore(sendMonthKey,userId,worth);
+
+        for (Long targetUserId : targetUserIds) {
+            redisTemplate.opsForZSet().incrementScore(receiveDayKey,userId,worth);
+            redisTemplate.opsForZSet().incrementScore(receiveWeekKey,userId,worth);
+            redisTemplate.opsForZSet().incrementScore(receiveMonthKey,userId,worth);
+        }
+    }
+
     /**
      * 获取房间麦位信息
      *
@@ -425,6 +473,7 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
         redisTemplate.opsForZSet().add(roomUserKey, userId, System.currentTimeMillis());
         //记录用户所在房间
         redisTemplate.opsForHash().put(userChatroomKey, userId, roomId);
-
     }
+
+
 }

@@ -20,6 +20,8 @@ public class RedisKeyConstants {
     public final static String CACHE_USER_FRIEND_KEY = "user_friend_%d";
     //用户访客key
     public final static String CACHE_USER_VISIT_KEY = "user_visit_%d";
+    //用户礼物墙key
+    public final static String CACHE_USER_GIFT_WALL_KEY = "user_gift_wall_%d";
     //用户所在聊天室key
     public final static String CACHE_USER_CHATROOM_KEY = "user_chatroom";
     //用户收藏的聊天室key
@@ -42,11 +44,25 @@ public class RedisKeyConstants {
     public final static String CACHE_CHATROOM_STAFF_TYPE_KEY = "chatroom_staff_type_%d_%d";
     //聊天室麦位倒计时key
     public final static String CACHE_CHATROOM_TIMER_POSITION_KEY = "chatroom_timer_position_%d_%d";
+    //聊天室麦位心动值key
+    public final static String CACHE_CHATROOM_MIC_HEART_KEY = "chatroom_mic_heart_%d";
     //聊天室锁密码key
     public final static String CACHE_CHATROOM_LOCK_KEY = "chatroom_lock";
     //礼物key
     public final static String CACHE_GIFT_ID_KEY = "gift_%d";
     //用户背包礼物key
     public final static String CACHE_USER_PACK_GIFT_KEY = "user_pack_gift_%d";
+    //聊天室贡献日榜key
+    public final static String CACHE_CHATROOM_RANK_SEND_DAY_KEY = "chatroom_rank_send_day_%d_%s";
+    //聊天室贡献周榜key
+    public final static String CACHE_CHATROOM_RANK_SEND_WEEK_KEY = "chatroom_rank_send_week_%d_%s_%d";
+    //聊天室贡献月榜key
+    public final static String CACHE_CHATROOM_RANK_SEND_MONTH_KEY = "chatroom_rank_send_month_%d_%s";
+    //聊天室魅力日榜key
+    public final static String CACHE_CHATROOM_RANK_RECEIVE_DAY_KEY = "chatroom_rank_receive_day_%d_%s";
+    //聊天室魅力周榜key
+    public final static String CACHE_CHATROOM_RANK_RECEIVE_WEEK_KEY = "chatroom_rank_receive_day_%d_%s_%d";
+    //聊天室魅力月榜key
+    public final static String CACHE_CHATROOM_RANK_RECEIVE_MONTH_KEY = "chatroom_rank_receive_day_%d_%s";
 
 }

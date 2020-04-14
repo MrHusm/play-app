@@ -473,4 +473,56 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
         String key = String.format(RedisKeyConstants.CACHE_USER_COLLECT_CHATROOM_KEY,userId);
         redisTemplate.opsForList().remove(key,0,roomId);
     }
+
+    @Override
+    public Integer getNextVipExp(Integer vipLevel){
+        Integer nextVipExp = 0;
+        if(vipLevel == 0){
+            nextVipExp = 10;
+        }else if(vipLevel == 1){
+            nextVipExp = 400;
+        }else if(vipLevel == 2){
+            nextVipExp = 600;
+        }else if(vipLevel == 3){
+            nextVipExp = 800;
+        }else if(vipLevel == 4){
+            nextVipExp = 1000;
+        }else if(vipLevel == 5){
+            nextVipExp = 1200;
+        }else if(vipLevel == 6){
+            nextVipExp = 1400;
+        }else if(vipLevel == 7){
+            nextVipExp = 1600;
+        }else if(vipLevel == 8){
+            nextVipExp = 1800;
+        }else if(vipLevel == 9){
+            nextVipExp = 2000;
+        }else if(vipLevel == 10){
+            nextVipExp = 2200;
+        }else if(vipLevel == 11){
+            nextVipExp = 1200;
+        }else if(vipLevel == 12){
+            nextVipExp = 1200;
+        }else if(vipLevel == 13){
+            nextVipExp = 1200;
+        }else if(vipLevel == 14){
+            nextVipExp = 1200;
+        }else if(vipLevel == 15){
+            nextVipExp = 1200;
+        }else if(vipLevel == 16){
+            nextVipExp = 1200;
+        }else if(vipLevel == 17){
+            nextVipExp = 1200;
+        }
+        return nextVipExp;
+
+    }
+
+    @Override
+    public void addUserGiftWall(Long userId,Integer giftId, Integer num) {
+        String key = String.format(RedisKeyConstants.CACHE_USER_GIFT_WALL_KEY,userId) ;
+        redisTemplate.opsForHash().increment(key,giftId,num);
+    }
+
+
 }

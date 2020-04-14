@@ -15,10 +15,12 @@ import com.play.product.service.IGiftService;
 import com.play.product.service.IRewardRecordService;
 import com.play.product.view.GiftVO;
 import com.play.ucenter.model.TradeRecord;
+import com.play.ucenter.model.User;
 import com.play.ucenter.model.UserAccount;
 import com.play.ucenter.service.ITradeRecordService;
 import com.play.ucenter.service.IUserAccountService;
 import com.play.ucenter.service.IUserService;
+import com.play.ucenter.view.UserVO;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -78,10 +80,10 @@ public class GiftServiceImpl extends BaseServiceImpl<Gift, Integer> implements I
             throw new ServiceException(ResultCustomMessage.F1011);
         }
         String orderNo = UUID.randomUUID().toString().replaceAll("-", "");
+        BigDecimal amount = gift.getPrice().multiply(BigDecimal.valueOf(giftNum)).multiply(BigDecimal.valueOf(targetUserIds.size()));
         if (payType == 0) {
             //使用金币打赏
             UserAccount userAccount = this.userAccountService.getByUserId(userId);
-            BigDecimal amount = gift.getPrice().multiply(BigDecimal.valueOf(giftNum)).multiply(BigDecimal.valueOf(targetUserIds.size()));
             if (userAccount.getSilverAmount().compareTo(amount) < 0) {
                 throw new ServiceException(ResultCustomMessage.F1012);
             }
@@ -139,9 +141,41 @@ public class GiftServiceImpl extends BaseServiceImpl<Gift, Integer> implements I
             rewardRecord.setPlatformIncome(gift.getPrice().multiply(BigDecimal.valueOf(giftNum)).multiply(BigDecimal.valueOf(0.1)).setScale(2, BigDecimal.ROUND_HALF_UP));
             rewardRecord.setCreator(userId);
             rewardRecords.add(rewardRecord);
+
         }
         rewardRecordService.save(rewardRecords);
 
+        //升级VIP
+        UserVO userVO = this.userService.getByUserId(userId,userId);
+        Integer vipExp = userVO.getVipExp() + amount.intValue();
+        Integer vipLevel = userVO.getVipLevel();
+        Integer nexVipExp = userService.getNextVipExp(vipLevel + 1);
+        while (vipExp >= nexVipExp) {
+            // 发送系统通知 TODO
+//            String msgContent = "恭喜您升级到VIP" + nextLevelInfo.getVipLevel() + "，请前往【我的】-【会员中⼼】查看详情。";
+//            rongyunService.systemNoticeMessageAsync("会员中心", msgContent, userId, "会员中心-VIP升级通知");
+
+            vipLevel++;
+            nexVipExp = userService.getNextVipExp(vipLevel + 1);
+        }
+        User user = new User();
+        user.setUserId(userVO.getUserId());
+        user.setVipExp(vipExp);
+        user.setVipLevel(vipLevel);
+        userService.updateUser(user);
+
+        //增加用户礼物墙
+        for(Long targetUserId : targetUserIds){
+            userService.addUserGiftWall(targetUserId,giftId,giftNum);
+        }
+        //增加麦位收益
+        this.chatroomService.addMicHeart(roomId,positions,gift.getHeartValue()* giftNum);
+
+        //发送礼物消息 TODO
+
+        //发送全服广播 TODO
 
     }
+
+
 }

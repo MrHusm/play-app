@@ -135,4 +135,19 @@ public interface IUserService extends IBaseService<User,Long> {
      * @param roomId
      */
     void removeCollection(Long userId, Integer roomId);
+
+    /**
+     * 获取下一级VIP的经验值
+     * @param vipLevel
+     * @return
+     */
+    Integer getNextVipExp(Integer vipLevel);
+
+    /**
+     * 增加用户礼物墙
+     * @param userId
+     * @param giftId
+     * @param num
+     */
+    void addUserGiftWall(Long userId,Integer giftId,Integer num);
 }

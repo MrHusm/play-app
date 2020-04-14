@@ -76,7 +76,7 @@ public class User implements Serializable{
     /**
      * vip等级
      */
-    private Byte vipLevel;
+    private Integer vipLevel;
 
     /**
      * vip经验
@@ -247,11 +247,11 @@ public class User implements Serializable{
         this.motto = motto;
     }
 
-    public Byte getVipLevel() {
+    public Integer getVipLevel() {
         return vipLevel;
     }
 
-    public void setVipLevel(Byte vipLevel) {
+    public void setVipLevel(Integer vipLevel) {
         this.vipLevel = vipLevel;
     }
 
