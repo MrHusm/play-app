@@ -18,7 +18,6 @@ import com.play.ucenter.service.IUserService;
 import com.play.ucenter.view.UserMicVO;
 import com.play.ucenter.view.UserVO;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -419,19 +418,31 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
         String sendMonthKey = String.format(RedisKeyConstants.CACHE_CHATROOM_RANK_SEND_MONTH_KEY,roomId,month);
         String sendWeekKey = String.format(RedisKeyConstants.CACHE_CHATROOM_RANK_SEND_WEEK_KEY,roomId,year,week);
         String sendDayKey = String.format(RedisKeyConstants.CACHE_CHATROOM_RANK_SEND_DAY_KEY,roomId,day);
+        String sendKey = String.format(RedisKeyConstants.CACHE_RANK_SEND_MONTH_KEY,month);
 
         String receiveMonthKey = String.format(RedisKeyConstants.CACHE_CHATROOM_RANK_RECEIVE_MONTH_KEY,roomId,month);
         String receiveWeekKey = String.format(RedisKeyConstants.CACHE_CHATROOM_RANK_RECEIVE_WEEK_KEY,roomId,year,week);
-        String receiveDayKey = String.format(RedisKeyConstants.CACHE_CHATROOM_RANK_RECEIVE_DAY_KEY,roomId,day);;
+        String receiveDayKey = String.format(RedisKeyConstants.CACHE_CHATROOM_RANK_RECEIVE_DAY_KEY,roomId,day);
+        String receiveKey = String.format(RedisKeyConstants.CACHE_RANK_RECEIVE_MONTH_KEY,month);
 
-        redisTemplate.opsForZSet().incrementScore(sendDayKey,userId,worth);
-        redisTemplate.opsForZSet().incrementScore(sendWeekKey,userId,worth);
-        redisTemplate.opsForZSet().incrementScore(sendMonthKey,userId,worth);
+        redisTemplate.opsForZSet().incrementScore(sendDayKey,userId,worth * targetUserIds.size());
+        redisTemplate.expire(sendDayKey,3,TimeUnit.DAYS);
+        redisTemplate.opsForZSet().incrementScore(sendWeekKey,userId,worth * targetUserIds.size());
+        redisTemplate.expire(sendWeekKey,7,TimeUnit.DAYS);
+        redisTemplate.opsForZSet().incrementScore(sendMonthKey,userId,worth * targetUserIds.size());
+        redisTemplate.expire(sendMonthKey,30,TimeUnit.DAYS);
+        redisTemplate.opsForZSet().incrementScore(sendKey,userId,worth * targetUserIds.size());
+        redisTemplate.expire(sendMonthKey,30,TimeUnit.DAYS);
 
         for (Long targetUserId : targetUserIds) {
-            redisTemplate.opsForZSet().incrementScore(receiveDayKey,userId,worth);
-            redisTemplate.opsForZSet().incrementScore(receiveWeekKey,userId,worth);
-            redisTemplate.opsForZSet().incrementScore(receiveMonthKey,userId,worth);
+            redisTemplate.opsForZSet().incrementScore(receiveDayKey,targetUserId,worth);
+            redisTemplate.expire(receiveDayKey,3,TimeUnit.DAYS);
+            redisTemplate.opsForZSet().incrementScore(receiveWeekKey,targetUserId,worth);
+            redisTemplate.expire(receiveWeekKey,7,TimeUnit.DAYS);
+            redisTemplate.opsForZSet().incrementScore(receiveMonthKey,targetUserId,worth);
+            redisTemplate.expire(receiveMonthKey,30,TimeUnit.DAYS);
+            redisTemplate.opsForZSet().incrementScore(receiveKey,targetUserId,worth);
+            redisTemplate.expire(receiveKey,30,TimeUnit.DAYS);
         }
     }
 

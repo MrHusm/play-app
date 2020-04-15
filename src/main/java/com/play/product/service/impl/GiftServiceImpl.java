@@ -170,6 +170,8 @@ public class GiftServiceImpl extends BaseServiceImpl<Gift, Integer> implements I
         }
         //增加麦位收益
         this.chatroomService.addMicHeart(roomId,positions,gift.getHeartValue()* giftNum);
+        //增加贡献和魅力排行榜
+        this.chatroomService.addUserRoomRank(roomId,userId,targetUserIds,gift.getWorth().intValue() * giftNum);
 
         //发送礼物消息 TODO
 

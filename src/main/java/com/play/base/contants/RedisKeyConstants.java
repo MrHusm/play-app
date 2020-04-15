@@ -58,11 +58,15 @@ public class RedisKeyConstants {
     public final static String CACHE_CHATROOM_RANK_SEND_WEEK_KEY = "chatroom_rank_send_week_%d_%s_%d";
     //聊天室贡献月榜key
     public final static String CACHE_CHATROOM_RANK_SEND_MONTH_KEY = "chatroom_rank_send_month_%d_%s";
+    //贡献总月榜key
+    public final static String CACHE_RANK_SEND_MONTH_KEY = "rank_send_month_%s";
     //聊天室魅力日榜key
     public final static String CACHE_CHATROOM_RANK_RECEIVE_DAY_KEY = "chatroom_rank_receive_day_%d_%s";
     //聊天室魅力周榜key
     public final static String CACHE_CHATROOM_RANK_RECEIVE_WEEK_KEY = "chatroom_rank_receive_day_%d_%s_%d";
     //聊天室魅力月榜key
     public final static String CACHE_CHATROOM_RANK_RECEIVE_MONTH_KEY = "chatroom_rank_receive_day_%d_%s";
+    //魅力总月榜key
+    public final static String CACHE_RANK_RECEIVE_MONTH_KEY = "rank_receive_month_%s";
 
 }

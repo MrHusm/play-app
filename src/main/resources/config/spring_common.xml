@@ -117,7 +117,7 @@
 
 
 	<!-- redis配置 -->
-<!--	<import resource="classpath*:/config/redis_config.xml" />-->
+	<import resource="classpath*:/config/redis_config.xml" />
 <!--	<import resource="classpath*:/config/spring-task.xml" />-->
 
 </beans>
