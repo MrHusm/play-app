@@ -21,4 +21,12 @@ public class UserAccountDaoImpl extends BaseDaoImpl<UserAccount> implements IUse
         param.put("amount", amount);
         return this.update("UserAccountMapper.giftPay", param);
     }
+
+    @Override
+    public int giftReceive(Long userId, BigDecimal amount) {
+        Map<String, Object> param = new HashMap<String, Object>();
+        param.put("userId", userId);
+        param.put("amount", amount);
+        return this.update("UserAccountMapper.giftReceive", param);
+    }
 }

@@ -8,6 +8,7 @@ import com.play.base.utils.BeanUtils;
 import com.play.base.utils.ResultCustomMessage;
 import com.play.im.service.IChatroomService;
 import com.play.im.view.ChatroomVO;
+import com.play.message.view.GiftMessageVO;
 import com.play.product.dao.IGiftDao;
 import com.play.product.model.Gift;
 import com.play.product.model.RewardRecord;
@@ -41,15 +42,11 @@ public class GiftServiceImpl extends BaseServiceImpl<Gift, Integer> implements I
     @Resource
     private IGiftDao giftDao;
     @Resource
-    private IUserService userService;
-    @Resource
     private IUserAccountService userAccountService;
     @Resource
     private ITradeRecordService tradeRecordService;
     @Resource
     private IChatroomService chatroomService;
-    @Resource
-    private IRewardRecordService rewardRecordService;
     @Resource
     private AmqpTemplate amqpTemplate;
     @Resource(name = "redisTemplate")
@@ -84,6 +81,7 @@ public class GiftServiceImpl extends BaseServiceImpl<Gift, Integer> implements I
         }
         String orderNo = UUID.randomUUID().toString().replaceAll("-", "");
         BigDecimal amount = gift.getPrice().multiply(BigDecimal.valueOf(giftNum)).multiply(BigDecimal.valueOf(targetUserIds.size()));
+        Date sendDate = new Date();
         if (payType == 0) {
             //使用金币打赏
             UserAccount userAccount = this.userAccountService.getByUserId(userId);
@@ -101,11 +99,11 @@ public class GiftServiceImpl extends BaseServiceImpl<Gift, Integer> implements I
             tradeRecord.setOrderNo(orderNo);
             tradeRecord.setType(-1);
             tradeRecord.setAmount(amount);
-            tradeRecord.setAccountType(1);
-            tradeRecord.setTradeTime(new Date());
+            tradeRecord.setAccountType(2);
+            tradeRecord.setTradeTime(sendDate);
             tradeRecord.setUserId(userId);
             tradeRecord.setCreator(userId);
-            tradeRecord.setCreateDate(new Date());
+            tradeRecord.setCreateDate(sendDate);
             tradeRecordService.save(tradeRecord);
         } else {
             //使用背包礼物打赏
@@ -123,65 +121,24 @@ public class GiftServiceImpl extends BaseServiceImpl<Gift, Integer> implements I
                 throw new ServiceException(ResultCustomMessage.F1013);
             }
         }
-        ChatroomVO chatroom = this.chatroomService.getByRoomId(roomId);
-        //保存礼物打赏记录
-        List<RewardRecord> rewardRecords = new ArrayList<RewardRecord>();
-        for (Long targetUserId : targetUserIds) {
-            RewardRecord rewardRecord = new RewardRecord();
-            rewardRecord.setOrderNo(orderNo);
-            rewardRecord.setGiftId(giftId);
-            rewardRecord.setGiftName(gift.getName());
-            rewardRecord.setGiftNum(giftNum);
-            rewardRecord.setGiftPrice(gift.getPrice());
-            rewardRecord.setGiftTotalPrice(gift.getPrice().multiply(BigDecimal.valueOf(giftNum)));
-            rewardRecord.setPayType(payType);
-            rewardRecord.setReceiverId(targetUserId);
-            rewardRecord.setRoomOwnerId(chatroom.getOwnnerId());
-            rewardRecord.setRoomId(roomId);
-            rewardRecord.setSenderId(userId);
-            rewardRecord.setReceiverIncome(gift.getPrice().multiply(BigDecimal.valueOf(giftNum)).multiply(BigDecimal.valueOf(0.7)).setScale(2, BigDecimal.ROUND_HALF_UP));
-            rewardRecord.setRoomOwnerIncome(gift.getPrice().multiply(BigDecimal.valueOf(giftNum)).multiply(BigDecimal.valueOf(0.1)).setScale(2, BigDecimal.ROUND_HALF_UP));
-            rewardRecord.setPlatformIncome(gift.getPrice().multiply(BigDecimal.valueOf(giftNum)).multiply(BigDecimal.valueOf(0.1)).setScale(2, BigDecimal.ROUND_HALF_UP));
-            rewardRecord.setCreator(userId);
-            rewardRecords.add(rewardRecord);
-
-        }
-        rewardRecordService.save(rewardRecords);
-
-        //升级VIP
-        UserVO userVO = this.userService.getByUserId(userId,userId);
-        Integer vipExp = userVO.getVipExp() + amount.intValue();
-        Integer vipLevel = userVO.getVipLevel();
-        Integer nexVipExp = userService.getNextVipExp(vipLevel + 1);
-        while (vipExp >= nexVipExp) {
-            // 发送系统通知 TODO
-//            String msgContent = "恭喜您升级到VIP" + nextLevelInfo.getVipLevel() + "，请前往【我的】-【会员中⼼】查看详情。";
-//            rongyunService.systemNoticeMessageAsync("会员中心", msgContent, userId, "会员中心-VIP升级通知");
-
-            vipLevel++;
-            nexVipExp = userService.getNextVipExp(vipLevel + 1);
-        }
-        User user = new User();
-        user.setUserId(userVO.getUserId());
-        user.setVipExp(vipExp);
-        user.setVipLevel(vipLevel);
-        userService.updateUser(user);
-
-        //增加用户礼物墙
-        for(Long targetUserId : targetUserIds){
-            userService.addUserGiftWall(targetUserId,giftId,giftNum);
-        }
         //增加麦位收益
         this.chatroomService.addMicHeart(roomId,positions,gift.getHeartValue()* giftNum);
-        //增加贡献和魅力排行榜
-        this.chatroomService.addUserRoomRank(roomId,userId,targetUserIds,gift.getWorth().intValue() * giftNum);
+        //发送礼物打赏消息
+        GiftMessageVO message = new GiftMessageVO();
+        message.setRoomId(roomId);
+        message.setGift(gift);
+        message.setGiftNum(giftNum);
+        message.setSenderId(userId);
+        message.setTargetUserIds(targetUserIds);
+        message.setOrderNo(orderNo);
+        message.setPayType(payType);
+        message.setSendDate(sendDate);
+        amqpTemplate.convertAndSend("queueGiftKey",message);
 
         //发送礼物消息 TODO
 
         //发送全服广播 TODO
-//        amqpTemplate.convertAndSend();
 
     }
-
 
 }

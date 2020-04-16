@@ -20,7 +20,7 @@ public class TradeRecord implements Serializable {
     private Long userId;
 
     /**
-     * 交易类型 1：礼物收入 2:微信充值 3：支付宝充值 4：后台转入 5：用户转入 -1：打赏 -2：用户转出 -3：抽奖
+     * 交易类型 1：礼物收入 2:微信充值 3：支付宝充值 4：后台转入 5：用户转入 6：礼物分成 -1：打赏 -2：用户转出 -3：抽奖
      */
     private Integer type;
 

@@ -25,4 +25,12 @@ public interface IUserAccountService extends IBaseService<UserAccount,Long> {
      * @param totalPrice
      */
     int giftPay(Long userId, BigDecimal totalPrice);
+
+    /**
+     * 收到礼物
+     * @param userId
+     * @param amount
+     * @return
+     */
+    int giftReceive(Long userId, BigDecimal amount);
 }

@@ -17,4 +17,12 @@ public interface IUserAccountDao extends IBaseDao<UserAccount> {
      * @param amount
      */
     int giftPay(Long userId, BigDecimal amount);
+
+    /**
+     * 收到礼物
+     * @param userId
+     * @param amount
+     * @return
+     */
+    int giftReceive(Long userId, BigDecimal amount);
 }

@@ -26,11 +26,11 @@
 	<rabbit:template id="amqpTemplate" connection-factory="connectionFactory" exchange="exchange.play"/>
 
 	<!-- 消息接收者 -->
-	<bean id="messageReceiver" class="consumer.MessageConsumer"></bean>
+	<bean id="giftConsumer" class="com.play.message.listener.GiftListener"></bean>
 
 	<!-- queue litener 观察 监听模式 当有消息到达时会通知监听在对应的队列上的监听对象 -->
 	<rabbit:listener-container connection-factory="connectionFactory">
-		<rabbit:listener queues="queue.gift" ref="messageReceiver"/>
+		<rabbit:listener queues="queue.gift" ref="giftConsumer"/>
 	</rabbit:listener-container>
 
 </beans>

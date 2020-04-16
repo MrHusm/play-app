@@ -33,4 +33,9 @@ public class UserAccountServiceImpl extends BaseServiceImpl<UserAccount, Long> i
     public int giftPay(Long userId, BigDecimal amount) {
         return userAccountDao.giftPay(userId, amount);
     }
+
+    @Override
+    public int giftReceive(Long userId, BigDecimal amount) {
+        return userAccountDao.giftReceive(userId, amount);
+    }
 }
