@@ -21,6 +21,7 @@ import com.play.ucenter.service.ITradeRecordService;
 import com.play.ucenter.service.IUserAccountService;
 import com.play.ucenter.service.IUserService;
 import com.play.ucenter.view.UserVO;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -49,6 +50,8 @@ public class GiftServiceImpl extends BaseServiceImpl<Gift, Integer> implements I
     private IChatroomService chatroomService;
     @Resource
     private IRewardRecordService rewardRecordService;
+    @Resource
+    private AmqpTemplate amqpTemplate;
     @Resource(name = "redisTemplate")
     private RedisTemplate<String, Gift> giftRedisTemplate;
     @Resource(name = "redisTemplate")
@@ -176,6 +179,7 @@ public class GiftServiceImpl extends BaseServiceImpl<Gift, Integer> implements I
         //发送礼物消息 TODO
 
         //发送全服广播 TODO
+//        amqpTemplate.convertAndSend();
 
     }
 
