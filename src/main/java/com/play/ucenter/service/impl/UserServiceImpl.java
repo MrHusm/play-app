@@ -535,7 +535,7 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
 
     @Override
     public void addUserGiftWall(Long userId,Integer giftId, Integer num) {
-        String key = String.format(RedisKeyConstants.CACHE_USER_GIFT_WALL_KEY,userId) ;
+        String key = String.format(RedisKeyConstants.CACHE_USER_GIFT_WALL_KEY, userId);
         redisTemplate.opsForHash().increment(key,giftId,num);
     }
 
