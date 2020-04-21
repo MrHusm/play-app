@@ -119,7 +119,8 @@
 			<bean class="com.play.base.interceptor.SecurityInterceptor">
 				<property name="excludedUrls">
 	                <list>
-						<value>/user/info.go</value>
+						<value>/user/mobile/code.go</value>
+						<value>/user/mobile/login.go</value>
 	                </list>
 	            </property>
 	        </bean>

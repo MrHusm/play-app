@@ -1,5 +1,6 @@
 package com.play.ucenter.view;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.io.Serializable;
@@ -45,6 +46,7 @@ public class UserOnlineVO implements Serializable {
         this.token = token;
     }
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     public Timestamp getRefreshTime() {
         return refreshTime;
     }
@@ -53,6 +55,7 @@ public class UserOnlineVO implements Serializable {
         this.refreshTime = refreshTime;
     }
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     public Timestamp getTokenTime() {
         return tokenTime;
     }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.play.ucenter.model.UserMapper" >
+<mapper namespace="UserMapper">
     <resultMap id="BaseResultMap" type="com.play.ucenter.model.User" >
         <id column="id" property="id" jdbcType="BIGINT" />
         <result column="user_id" property="userId" jdbcType="BIGINT" />
@@ -9,6 +9,7 @@
         <result column="mobile" property="mobile" jdbcType="VARCHAR" />
         <result column="pwd" property="pwd" jdbcType="VARCHAR" />
         <result column="head_url" property="headUrl" jdbcType="VARCHAR" />
+        <result column="pend_head_url" property="pendHeadUrl" jdbcType="VARCHAR"/>
         <result column="headwear_url" property="headwearUrl" jdbcType="VARCHAR" />
         <result column="sex" property="sex" jdbcType="TINYINT" />
         <result column="birthday" property="birthday" jdbcType="DATE" />
@@ -33,10 +34,10 @@
     <sql id="Base_Where">
         <if test="userId != null"> and user_id= #{userId}</if>
         <if test="mobile != null and mobile !=''"> and mobile= #{mobile}</if>
-        <if test="nickName != null and nickName !=''"> and nickName like #{nickName}</if>
+        <if test="nickName != null and nickName !=''">and nick_name like #{nickName}</if>
     </sql>
     <sql id="Base_Column_List" >
-        id, user_id, pretty_id, nick_name, mobile, pwd, head_url, headwear_url, sex, birthday,
+        id, user_id, pretty_id, nick_name, mobile, pwd, head_url,pend_head_url, headwear_url, sex, birthday,
         province, city, motto, vip_level, vip_exp, freeze, freeze_expire_time, app_version,
         device_type, device_imei, device_name, bundle_id, os_version, channel, deleted, create_date,
         update_date
@@ -53,7 +54,7 @@
     </delete>
     <insert id="insert" parameterType="com.play.ucenter.model.User" >
         insert into user_info (user_id, pretty_id, nick_name,
-        mobile, pwd, head_url,
+        mobile, pwd, head_url,pend_head_url,
         headwear_url, sex, birthday,
         province, city, motto,
         vip_level, vip_exp, freeze,
@@ -62,7 +63,8 @@
         os_version, channel, deleted,
         create_date, update_date)
         values (#{userId,jdbcType=BIGINT}, #{prettyId,jdbcType=BIGINT}, #{nickName,jdbcType=VARCHAR},
-        #{mobile,jdbcType=VARCHAR}, #{pwd,jdbcType=VARCHAR}, #{headUrl,jdbcType=VARCHAR},
+        #{mobile,jdbcType=VARCHAR}, #{pwd,jdbcType=VARCHAR},
+        #{headUrl,jdbcType=VARCHAR},#{pendHeadUrl,jdbcType=VARCHAR},
         #{headwearUrl,jdbcType=VARCHAR}, #{sex,jdbcType=TINYINT}, #{birthday,jdbcType=DATE},
         #{province,jdbcType=VARCHAR}, #{city,jdbcType=VARCHAR}, #{motto,jdbcType=VARCHAR},
         #{vipLevel,jdbcType=TINYINT}, #{vipExp,jdbcType=INTEGER}, #{freeze,jdbcType=BIT},
@@ -91,6 +93,9 @@
             </if>
             <if test="headUrl != null" >
                 head_url,
+            </if>
+            <if test="pendHeadUrl != null">
+                pend_head_url,
             </if>
             <if test="headwearUrl != null" >
                 headwear_url,
@@ -172,6 +177,9 @@
             <if test="headUrl != null" >
                 #{headUrl,jdbcType=VARCHAR},
             </if>
+            <if test="pendHeadUrl != null">
+                #{pendHeadUrl,jdbcType=VARCHAR},
+            </if>
             <if test="headwearUrl != null" >
                 #{headwearUrl,jdbcType=VARCHAR},
             </if>
@@ -237,9 +245,6 @@
     <update id="updateByPrimaryKeySelective" parameterType="com.play.ucenter.model.User" >
         update user_info
         <set >
-            <if test="userId != null" >
-                user_id = #{userId,jdbcType=BIGINT},
-            </if>
             <if test="prettyId != null" >
                 pretty_id = #{prettyId,jdbcType=BIGINT},
             </if>
@@ -254,6 +259,9 @@
             </if>
             <if test="headUrl != null" >
                 head_url = #{headUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="pendHeadUrl != null">
+                pend_head_url = #{pendHeadUrl,jdbcType=VARCHAR},
             </if>
             <if test="headwearUrl != null" >
                 headwear_url = #{headwearUrl,jdbcType=VARCHAR},
@@ -316,7 +324,7 @@
                 update_date = #{updateDate,jdbcType=TIMESTAMP},
             </if>
         </set>
-        where id = #{id,jdbcType=BIGINT}
+        where user_id = #{userId,jdbcType=BIGINT}
     </update>
     <update id="updateByPrimaryKey" parameterType="com.play.ucenter.model.User" >
         update user_info
@@ -326,6 +334,7 @@
         mobile = #{mobile,jdbcType=VARCHAR},
         pwd = #{pwd,jdbcType=VARCHAR},
         head_url = #{headUrl,jdbcType=VARCHAR},
+        pend_head_url = #{pendHeadUrl,jdbcType=VARCHAR},
         headwear_url = #{headwearUrl,jdbcType=VARCHAR},
         sex = #{sex,jdbcType=TINYINT},
         birthday = #{birthday,jdbcType=DATE},
@@ -352,17 +361,17 @@
     <select id="getAll" resultMap="BaseResultMap" parameterType="map">
         select
         <include refid="Base_Column_List" />
-        from user where 1=1
+        from user_info where 1=1
         <include refid="Base_Where" />
     </select>
     <select id="pageCount" resultType="java.lang.Integer" parameterType="map">
-        select count(1) from user where 1=1
+        select count(1) from user_info where 1=1
         <include refid="Base_Where" />
     </select>
     <select id="pageData" resultMap="BaseResultMap" parameterType="map">
         select
         <include refid="Base_Column_List" />
-        from user where 1=1
+        from user_info where 1=1
         <include refid="Base_Where" />
         order by create_date desc
     </select>

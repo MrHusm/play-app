@@ -43,6 +43,7 @@ public class SecurityInterceptor extends HandlerInterceptorAdapter {
         if (!StringUtils.isEmpty(token)) {
             Long userId = userService.verifyToken(token);
             if (userId > 0) {
+                request.setAttribute("userId", userId);
                 return true;
             }
         }

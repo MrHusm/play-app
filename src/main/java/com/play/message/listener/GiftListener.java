@@ -1,8 +1,6 @@
 package com.play.message.listener;
 
 import com.alibaba.fastjson.JSON;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.play.im.service.IChatroomService;
 import com.play.im.view.ChatroomVO;
 import com.play.message.view.GiftMessageVO;
@@ -17,10 +15,8 @@ import com.play.ucenter.service.IUserService;
 import com.play.ucenter.view.UserVO;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageListener;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,7 +25,6 @@ import java.util.List;
 /**
  * Created by lenovo on 2020/4/16.
  */
-@Component
 public class GiftListener implements MessageListener {
 
     @Resource

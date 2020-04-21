@@ -50,7 +50,8 @@ public class UserController extends BaseController {
     @ResponseBody
     @RequestMapping(value = "/logout", method = {RequestMethod.POST})
     public ResultResponse logout(@RequestHeader(value = TOKEN, required = true) String token) throws ServiceException {
-        userService.logout(token);
+        Long userId = this.getUserId();
+        userService.logout(token, userId);
         return resultResponse.success();
     }
 
@@ -76,11 +77,11 @@ public class UserController extends BaseController {
      */
     @ResponseBody
     @RequestMapping(value = "/mobile/login")
-    public ResultResponse verifyByMobile(@RequestParam(required = true) String mobile, @RequestParam(required = true) String code,
-                                         @RequestParam(required = true) String appVersion, @RequestParam(required = true) Integer deviceType,
-                                         @RequestParam(required = true) String deviceImei, @RequestParam(required = true) String deviceName,
-                                         @RequestParam(required = true) String bundleId, @RequestParam(required = true) String osVersion,
-                                         @RequestParam(required = true) Integer channel)throws ServiceException {
+    public ResultResponse loginByMobile(@RequestParam(required = true) String mobile, @RequestParam(required = true) String code,
+                                        @RequestParam(required = true) String appVersion, @RequestParam(required = true) Integer deviceType,
+                                        @RequestParam(required = true) String deviceImei, @RequestParam(required = true) String deviceName,
+                                        @RequestParam(required = true) String bundleId, @RequestParam(required = true) String osVersion,
+                                        @RequestParam(required = true) Integer channel) throws ServiceException {
         User loginUser = new User();
         loginUser.setMobile(mobile);
         loginUser.setAppVersion(appVersion);

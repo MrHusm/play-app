@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -249,8 +248,8 @@ public class ChatroomController extends BaseController {
     /**
      * 编辑房间信息 开关心动值 上下麦方式
      */
-    @RequestMapping(value = "/open", method = {RequestMethod.GET})
-    public ResultResponse open(@RequestParam(required = true)Integer roomId, Chatroom chatroom) throws ServiceException {
+    @RequestMapping(value = "/edit", method = {RequestMethod.GET})
+    public ResultResponse edit(@RequestParam(required = true) Integer roomId, Chatroom chatroom) throws ServiceException {
         Long userId = this.getUserId();
         chatroom.setRoomId(roomId);
         chatroomService.updateChatroom(chatroom);

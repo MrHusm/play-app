@@ -3,6 +3,7 @@ package com.play.base.utils;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
+import org.apache.commons.beanutils.converters.SqlDateConverter;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
@@ -16,6 +17,10 @@ import java.util.Map;
  */
 public class BeanUtils {
 	private static BeanUtilsBean b = BeanUtilsBean.getInstance();
+
+	static {
+		b.getConvertUtils().register(new SqlDateConverter(null), java.util.Date.class);
+	}
 
 	public static Object cloneBean(Object bean){
 		try {

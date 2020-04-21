@@ -6,7 +6,6 @@ import com.play.base.dao.IBaseDao;
 import com.play.base.exception.ServiceException;
 import com.play.base.service.impl.BaseServiceImpl;
 import com.play.base.utils.*;
-import com.play.im.service.impl.RongyunService;
 import com.play.ucenter.dao.IUserDao;
 import com.play.ucenter.model.User;
 import com.play.ucenter.model.UserAccount;
@@ -29,6 +28,7 @@ import org.apache.http.util.EntityUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -36,6 +36,7 @@ import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Created by hushengmeng on 2020/3/30.
@@ -49,9 +50,7 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
     @Resource
     private IUserAuditInfoService userAuditInfoService;
     @Resource(name = "redisTemplate")
-    private RedisTemplate<String, User> userRedisTemplate;
-    @Resource(name = "redisTemplate")
-    private RedisTemplate<String, UserOnlineVO> userOnlineRedisTemplate;
+    private RedisTemplate<String, String> stringRedisTemplate;
     @Resource(name = "redisTemplate")
     private RedisTemplate<String, Long> userRelRedisTemplate;
     @Resource(name = "redisTemplate")
@@ -65,11 +64,11 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
     @Override
     public UserVO getByUserId(Long userId, Long targetUserId) {
         String key = String.format(RedisKeyConstants.CACHE_USER_ID_KEY, targetUserId);
-        User user = userRedisTemplate.opsForValue().get(key);
+        User user = JSON.parseObject(stringRedisTemplate.opsForValue().get(key), User.class);
         if (user == null) {
             user = this.findUniqueByParams("userId", targetUserId);
             if (user != null) {
-                userRedisTemplate.opsForValue().set(key, user, 8, TimeUnit.HOURS);
+                stringRedisTemplate.opsForValue().set(key, JSON.toJSONString(user), 8, TimeUnit.HOURS);
             }
         }
         if (userId.longValue() == targetUserId.longValue() && StringUtils.isNotBlank(user.getPendHeadUrl())) {
@@ -82,12 +81,16 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
     @Override
     public void deleteUserCache(Long userId) {
         String key = String.format(RedisKeyConstants.CACHE_USER_ID_KEY, userId);
-        userRedisTemplate.delete(key);
+        stringRedisTemplate.delete(key);
     }
 
     @Override
-    public void logout(String token) {
-
+    public void logout(String token, Long userId) {
+        String tokeKey = String.format(RedisKeyConstants.CACHE_USER_ONLINE_TOKEN_KEY, token);
+        String userIdKey = String.format(RedisKeyConstants.CACHE_USER_ONLINE_ID_KEY, userId);
+        stringRedisTemplate.delete(tokeKey);
+        stringRedisTemplate.delete(userIdKey);
+        //TODO 清理聊天室相关信息
     }
 
     @Override
@@ -147,20 +150,26 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
         }
     }
 
+    @Transactional
     @Override
     public Map<String,Object> loginByMobile(String mobile, String code, User loginUser) throws ServiceException{
-        verifyCode(mobile,code);
+//        verifyCode(mobile,code);
         Map<String,Object> data = new HashMap<String, Object>();
         UserVO userVO;
         User user =  this.findUniqueByParams("mobile", mobile);
         if(user == null){
-            //注册账号 TODO
+            //注册账号
+            //TODO 生成用户id 昵称 头像地址等信息
             data.put("new",1);
             loginUser.setUserId(1L);
+            loginUser.setNickName("1");
             loginUser.setPrettyId(1L);
             loginUser.setPwd("1");
+            loginUser.setSex(0);
             loginUser.setHeadUrl("http://url");
             loginUser.setPendHeadUrl("http://url");
+            loginUser.setVipLevel(0);
+            loginUser.setVipExp(0);
 
             loginUser.setCreateDate(new Date());
             loginUser.setUpdateDate(new Date());
@@ -179,10 +188,13 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
                 throw new ServiceException(ResultCustomMessage.F1004);
             }
             userVO = BeanUtils.copyProperties(UserVO.class,user);
+            if (StringUtils.isNotBlank(user.getPendHeadUrl())) {
+                userVO.setHeadUrl(user.getPendHeadUrl());
+            }
             data.put("new", 0);
         }
         String token = UUID.randomUUID().toString().replace("-", "").toLowerCase();
-        String rongToken = RongyunService.getToken(user.getUserId(), user.getNickName(), userVO.getPendHeadUrl());
+        String rongToken = "da"; //RongyunService.getToken(user.getUserId(), user.getNickName(), userVO.getHeadUrl());
         userVO.setToken(token);
         userVO.setRongToken(rongToken);
 
@@ -200,14 +212,14 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
         userOnlineVO.setToken(token);
         userOnlineVO.setRefreshTime(nowTimestamp);
         userOnlineVO.setTokenTime(nowTimestamp);
-        userOnlineRedisTemplate.opsForValue().set(String.format(RedisKeyConstants.CACHE_USER_ONLINE_TOKEN_KEY, token), userOnlineVO, 30 * 24 * 60 * 60, TimeUnit.SECONDS);
+        stringRedisTemplate.opsForValue().set(String.format(RedisKeyConstants.CACHE_USER_ONLINE_TOKEN_KEY, token), JSON.toJSONString(userOnlineVO), 30 * 24 * 60 * 60, TimeUnit.SECONDS);
 
-        UserOnlineVO oldUserOnline = userOnlineRedisTemplate.opsForValue().get(String.format(RedisKeyConstants.CACHE_USER_ONLINE_ID_KEY, userId));
+        UserOnlineVO oldUserOnline = JSON.parseObject(stringRedisTemplate.opsForValue().get(String.format(RedisKeyConstants.CACHE_USER_ONLINE_ID_KEY, userId)), UserOnlineVO.class);
         if (oldUserOnline != null) {
             //删除老的登录用户
-            userOnlineRedisTemplate.delete(String.format(RedisKeyConstants.CACHE_USER_ONLINE_TOKEN_KEY, oldUserOnline.getToken()));
+            stringRedisTemplate.delete(String.format(RedisKeyConstants.CACHE_USER_ONLINE_TOKEN_KEY, oldUserOnline.getToken()));
         }
-        userOnlineRedisTemplate.opsForValue().set(String.format(RedisKeyConstants.CACHE_USER_ONLINE_ID_KEY, userId), userOnlineVO, 30 * 24 * 60 * 60, TimeUnit.SECONDS);
+        stringRedisTemplate.opsForValue().set(String.format(RedisKeyConstants.CACHE_USER_ONLINE_ID_KEY, userId), JSON.toJSONString(userOnlineVO), 30 * 24 * 60 * 60, TimeUnit.SECONDS);
     }
 
     /**
@@ -278,6 +290,7 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
         }
     }
 
+    @Transactional
     @Override
     public void updateUser(User user) {
         this.update(user);
@@ -301,7 +314,7 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
         if(CollectionUtils.isEmpty(users)){
             users = this.findListByParams("nickName","%"+ keyword + "%");
         }
-        List<UserVO> userVOS = BeanUtils.copyProperties(List.class,users);
+        List<UserVO> userVOS = users.stream().map(user -> BeanUtils.copyProperties(UserVO.class, user)).collect(Collectors.toList());
         return userVOS;
     }
 
@@ -351,10 +364,12 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
 
     @Override
     public void addVisit(Long mId, Long userId) {
-        String key = String.format(RedisKeyConstants.CACHE_USER_VISIT_KEY, userId);
-        ZSetOperations<String, Long> operations = userRelRedisTemplate.opsForZSet();
-        long nowTimestamp = System.currentTimeMillis();
-        operations.add(key, mId, nowTimestamp);
+        if (mId.longValue() != userId.longValue()) {
+            String key = String.format(RedisKeyConstants.CACHE_USER_VISIT_KEY, userId);
+            ZSetOperations<String, Long> operations = userRelRedisTemplate.opsForZSet();
+            long nowTimestamp = System.currentTimeMillis();
+            operations.add(key, mId, nowTimestamp);
+        }
     }
 
     @Override
@@ -422,7 +437,7 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
 
     @Override
     public String getOnlineTime(Long userId) {
-        UserOnlineVO userOnlineVO = userOnlineRedisTemplate.opsForValue().get(String.format(RedisKeyConstants.CACHE_USER_ONLINE_ID_KEY, userId));
+        UserOnlineVO userOnlineVO = JSON.parseObject(stringRedisTemplate.opsForValue().get(String.format(RedisKeyConstants.CACHE_USER_ONLINE_ID_KEY, userId)), UserOnlineVO.class);
         Timestamp refreshTime = userOnlineVO.getRefreshTime();
         if (refreshTime == null) {
             return "7天前";
@@ -444,7 +459,7 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
 
     @Override
     public Long verifyToken(String token) {
-        UserOnlineVO userOnlineVO = userOnlineRedisTemplate.opsForValue().get(String.format(RedisKeyConstants.CACHE_USER_ONLINE_TOKEN_KEY, token));
+        UserOnlineVO userOnlineVO = JSON.parseObject(stringRedisTemplate.opsForValue().get(String.format(RedisKeyConstants.CACHE_USER_ONLINE_TOKEN_KEY, token)), UserOnlineVO.class);
         if (userOnlineVO != null) {
             //刷新token
             Timestamp nowTimestamp = new Timestamp(new Date().getTime());
@@ -454,8 +469,8 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
             Long userId = userOnlineVO.getUserId();
             if (interval > 2 * 60 * 1000) {
                 userOnlineVO.setRefreshTime(nowTimestamp);
-                userOnlineRedisTemplate.opsForValue().set(String.format(RedisKeyConstants.CACHE_USER_ONLINE_TOKEN_KEY, token), userOnlineVO, 30 * 24 * 60 * 60, TimeUnit.SECONDS);
-                userOnlineRedisTemplate.opsForValue().set(String.format(RedisKeyConstants.CACHE_USER_ONLINE_ID_KEY, userId), userOnlineVO, 30 * 24 * 60 * 60, TimeUnit.SECONDS);
+                stringRedisTemplate.opsForValue().set(String.format(RedisKeyConstants.CACHE_USER_ONLINE_TOKEN_KEY, token), JSON.toJSONString(userOnlineVO), 30 * 24 * 60 * 60, TimeUnit.SECONDS);
+                stringRedisTemplate.opsForValue().set(String.format(RedisKeyConstants.CACHE_USER_ONLINE_ID_KEY, userId), JSON.toJSONString(userOnlineVO), 30 * 24 * 60 * 60, TimeUnit.SECONDS);
             }
             return userId;
         }

@@ -20,6 +20,9 @@
     <result column="creator" property="creator" jdbcType="BIGINT" />
     <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
   </resultMap>
+  <sql id="Base_Where">
+    <if test="userId != null">and user_id= #{userId}</if>
+  </sql>
   <sql id="Base_Column_List" >
     id, order_no, sender_id, receiver_id, room_owner_id, room_id, gift_id, gift_name, gift_num,
     gift_price, gift_total_price, receiver_income, room_owner_income, platform_income, 

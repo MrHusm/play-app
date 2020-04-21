@@ -1,5 +1,6 @@
 package com.play.ucenter.view;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.io.Serializable;
@@ -53,11 +54,6 @@ public class UserVO implements Serializable {
     private String headUrl;
 
     /**
-     * 待审头像地址
-     */
-    private String pendHeadUrl;
-
-    /**
      * 头像框地址
      */
     private String headwearUrl;
@@ -93,7 +89,7 @@ public class UserVO implements Serializable {
     private Integer vipLevel;
 
     /**
-     * vip经验
+     * vip经验值
      */
     private Integer vipExp;
 
@@ -153,6 +149,7 @@ public class UserVO implements Serializable {
         this.sex = sex;
     }
 
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     public Date getBirthday() {
         return birthday;
     }
@@ -193,14 +190,6 @@ public class UserVO implements Serializable {
         this.vipLevel = vipLevel;
     }
 
-    public Integer getVipExp() {
-        return vipExp;
-    }
-
-    public void setVipExp(Integer vipExp) {
-        this.vipExp = vipExp;
-    }
-
     public BigDecimal getSilverAmount() {
         return silverAmount;
     }
@@ -217,14 +206,6 @@ public class UserVO implements Serializable {
         this.goldAmount = goldAmount;
     }
 
-    public String getPendHeadUrl() {
-        return pendHeadUrl;
-    }
-
-    public void setPendHeadUrl(String pendHeadUrl) {
-        this.pendHeadUrl = pendHeadUrl;
-    }
-
     public String getToken() {
         return token;
     }
@@ -239,5 +220,13 @@ public class UserVO implements Serializable {
 
     public void setRongToken(String rongToken) {
         this.rongToken = rongToken;
+    }
+
+    public Integer getVipExp() {
+        return vipExp;
+    }
+
+    public void setVipExp(Integer vipExp) {
+        this.vipExp = vipExp;
     }
 }

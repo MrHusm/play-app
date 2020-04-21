@@ -35,7 +35,7 @@ public interface IUserService extends IBaseService<User,Long> {
      *
      * @param token
      */
-    void logout(String token);
+    void logout(String token, Long userId);
 
     /**
      * 发送验证码
