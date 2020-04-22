@@ -51,6 +51,11 @@ public class GiftVO implements Serializable {
      */
     private Integer status;
 
+    /**
+     * 用户拥有数量
+     */
+    private Integer num;
+
     public Integer getId() {
         return id;
     }
@@ -121,5 +126,13 @@ public class GiftVO implements Serializable {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public Integer getNum() {
+        return num;
+    }
+
+    public void setNum(Integer num) {
+        this.num = num;
     }
 }

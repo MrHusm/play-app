@@ -6,6 +6,8 @@ import com.play.base.dao.IBaseDao;
 import com.play.base.exception.ServiceException;
 import com.play.base.service.impl.BaseServiceImpl;
 import com.play.base.utils.*;
+import com.play.product.service.IGiftService;
+import com.play.product.view.GiftVO;
 import com.play.ucenter.dao.IUserDao;
 import com.play.ucenter.model.User;
 import com.play.ucenter.model.UserAccount;
@@ -49,6 +51,8 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
     private IUserAccountService userAccountService;
     @Resource
     private IUserAuditInfoService userAuditInfoService;
+    @Resource
+    private IGiftService giftService;
     @Resource(name = "redisTemplate")
     private RedisTemplate<String, String> stringRedisTemplate;
     @Resource(name = "redisTemplate")
@@ -536,7 +540,20 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
     @Override
     public void addUserGiftWall(Long userId,Integer giftId, Integer num) {
         String key = String.format(RedisKeyConstants.CACHE_USER_GIFT_WALL_KEY, userId);
-        redisTemplate.opsForHash().increment(key,giftId,num);
+        redisTemplate.opsForHash().increment(key, giftId, num);
+    }
+
+    @Override
+    public List<GiftVO> getUserGiftWall(Long userId) {
+        String key = String.format(RedisKeyConstants.CACHE_USER_GIFT_WALL_KEY, userId);
+        Map<Object, Object> map = redisTemplate.opsForHash().entries(key);
+        List<GiftVO> giftVOS = giftService.getAllGifts();
+        return giftVOS.stream().filter(giftVO -> {
+            if (map.keySet().contains(giftVO.getId())) {
+                giftVO.setNum(Integer.parseInt(map.get(giftVO.getId()).toString()));
+            }
+            return map.keySet().contains(giftVO.getId());
+        }).collect(Collectors.toList());
     }
 
 

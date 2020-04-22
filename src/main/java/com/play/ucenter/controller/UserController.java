@@ -6,6 +6,7 @@ import com.play.base.utils.DateUtil;
 import com.play.base.utils.PageFinder;
 import com.play.base.utils.Query;
 import com.play.base.utils.ResultResponse;
+import com.play.product.view.GiftVO;
 import com.play.ucenter.model.User;
 import com.play.ucenter.service.IUserAccountService;
 import com.play.ucenter.service.IUserService;
@@ -150,12 +151,17 @@ public class UserController extends BaseController {
         Integer fansNum = this.userService.getRelationNum(2, userId);
         //用户在线时间
         String onlineTime = this.userService.getOnlineTime(userId);
+        userService.addUserGiftWall(userId, 1, 1);
+        //用户礼物墙信息
+        List<GiftVO> giftVOS = userService.getUserGiftWall(userId);
+
         userService.addVisit(mId, userId);
         data.put("user", user);
         data.put("relType", relType);
         data.put("fansNum", fansNum);
         data.put("onlineTime", onlineTime);
-        //TODO 获取魅力值 贡献值 礼物墙信息
+        data.put("giftWall", giftVOS);
+        //TODO 获取魅力值 贡献值
         return resultResponse.success(data);
     }
 

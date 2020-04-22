@@ -50,6 +50,8 @@ public class RedisKeyConstants {
     public final static String CACHE_CHATROOM_LOCK_KEY = "chatroom_lock";
     //礼物key
     public final static String CACHE_GIFT_ID_KEY = "gift_%d";
+    //所有礼物key
+    public final static String CACHE_GIFTS_KEY = "gifts";
     //用户背包礼物key
     public final static String CACHE_USER_PACK_GIFT_KEY = "user_pack_gift_%d";
     //聊天室贡献日榜key

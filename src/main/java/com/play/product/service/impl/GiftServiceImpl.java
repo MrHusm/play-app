@@ -1,5 +1,6 @@
 package com.play.product.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.play.base.contants.RedisKeyConstants;
 import com.play.base.dao.IBaseDao;
 import com.play.base.exception.ServiceException;
@@ -7,21 +8,16 @@ import com.play.base.service.impl.BaseServiceImpl;
 import com.play.base.utils.BeanUtils;
 import com.play.base.utils.ResultCustomMessage;
 import com.play.im.service.IChatroomService;
-import com.play.im.view.ChatroomVO;
 import com.play.message.view.GiftMessageVO;
 import com.play.product.dao.IGiftDao;
 import com.play.product.model.Gift;
-import com.play.product.model.RewardRecord;
 import com.play.product.service.IGiftService;
-import com.play.product.service.IRewardRecordService;
 import com.play.product.view.GiftVO;
 import com.play.ucenter.model.TradeRecord;
-import com.play.ucenter.model.User;
 import com.play.ucenter.model.UserAccount;
 import com.play.ucenter.service.ITradeRecordService;
 import com.play.ucenter.service.IUserAccountService;
-import com.play.ucenter.service.IUserService;
-import com.play.ucenter.view.UserVO;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -53,6 +49,8 @@ public class GiftServiceImpl extends BaseServiceImpl<Gift, Integer> implements I
     private RedisTemplate<String, Gift> giftRedisTemplate;
     @Resource(name = "redisTemplate")
     private RedisTemplate<String, Integer> intRedisTemplate;
+    @Resource(name = "redisTemplate")
+    private RedisTemplate<String, String> stringRedisTemplate;
 
     @Override
     public IBaseDao<Gift> getBaseDao() {
@@ -66,11 +64,34 @@ public class GiftServiceImpl extends BaseServiceImpl<Gift, Integer> implements I
         if (gift == null) {
             gift = get(id);
             if (gift != null) {
-                giftRedisTemplate.opsForValue().set(key, gift, 1, TimeUnit.DAYS);
+                giftRedisTemplate.opsForValue().set(key, gift, 7, TimeUnit.DAYS);
             }
         }
         GiftVO giftVO = BeanUtils.copyProperties(GiftVO.class, gift);
         return giftVO;
+    }
+
+    @Override
+    public List<GiftVO> getAllGifts() {
+        String key = RedisKeyConstants.CACHE_GIFTS_KEY;
+        List<String> giftJsons = stringRedisTemplate.opsForList().range(key, 0, -1);
+        List<GiftVO> list = new ArrayList<>();
+        if (CollectionUtils.isEmpty(giftJsons)) {
+            List<Gift> gifts = this.findListByParams();
+            if (CollectionUtils.isNotEmpty(gifts)) {
+                for (Gift gift : gifts) {
+                    list.add(BeanUtils.copyProperties(GiftVO.class, gift));
+                    stringRedisTemplate.opsForList().leftPush(key, JSON.toJSONString(gift));
+                }
+                stringRedisTemplate.expire(key, 7, TimeUnit.DAYS);
+            }
+        } else {
+            giftJsons.forEach(json -> {
+                Gift gift = JSON.parseObject(json, Gift.class);
+                list.add(BeanUtils.copyProperties(GiftVO.class, gift));
+            });
+        }
+        return list;
     }
 
     @Override

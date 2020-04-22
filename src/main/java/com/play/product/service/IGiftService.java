@@ -16,6 +16,12 @@ public interface IGiftService extends IBaseService<Gift, Integer> {
     GiftVO getById(Integer id);
 
     /**
+     * 获取所有礼物信息
+     *
+     * @return
+     */
+    List<GiftVO> getAllGifts();
+    /**
      * 打赏礼物
      *
      * @param giftId
@@ -28,4 +34,5 @@ public interface IGiftService extends IBaseService<Gift, Integer> {
      * @throws ServiceException
      */
     void sendGift(Long userId, Integer roomId, Integer giftId, Integer giftNum, List<Long> targetUserIds, List<Integer> positions, Integer payType) throws ServiceException;
+
 }

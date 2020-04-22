@@ -5,6 +5,7 @@ import com.play.base.exception.ServiceException;
 import com.play.base.service.IBaseService;
 import com.play.base.utils.PageFinder;
 import com.play.base.utils.Query;
+import com.play.product.view.GiftVO;
 import com.play.ucenter.model.User;
 import com.play.ucenter.view.UserVO;
 
@@ -150,4 +151,12 @@ public interface IUserService extends IBaseService<User,Long> {
      * @param num
      */
     void addUserGiftWall(Long userId,Integer giftId,Integer num);
+
+    /**
+     * 获取用户礼物墙信息
+     *
+     * @param userId
+     * @return
+     */
+    List<GiftVO> getUserGiftWall(Long userId);
 }
