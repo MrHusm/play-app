@@ -593,4 +593,21 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
             }
         }
     }
+
+    @Override
+    public void roomIdGenerate(Long startRoomId) throws ServiceException {
+        String key = RedisKeyConstants.CACHE_ROOM_CODE_KEY;
+        BoundSetOperations<String, Long> operations = longRedisTemplate.boundSetOps(key);
+        Long roomIdNum = operations.size();
+        if (roomIdNum > 20000) {
+            throw new ServiceException(ResultCustomMessage.F1014);
+        }
+
+        List<Long> listSerialNo = new ArrayList<Long>();
+        for (int i = 1; i <= 10000; i++) {
+            Long mId = startRoomId + i;
+            listSerialNo.add(mId);
+        }
+        operations.add(listSerialNo.toArray(new Long[0]));
+    }
 }

@@ -76,6 +76,13 @@ public class UserController extends BaseController {
         return resultResponse.success();
     }
 
+    @ResponseBody
+    @RequestMapping(value = "/generate/roomId")
+    public ResultResponse roomIdGenerate() throws ServiceException {
+        userService.roomIdGenerate(1000000L);
+        return resultResponse.success();
+    }
+
     /**
      * 手机号登录
      * @param mobile

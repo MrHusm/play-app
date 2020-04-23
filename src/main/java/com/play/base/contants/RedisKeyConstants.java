@@ -8,6 +8,8 @@ public class RedisKeyConstants {
 
     //用户ids key
     public final static String CACHE_USER_CODE_KEY = "user_code";
+    //聊天室ids key
+    public final static String CACHE_ROOM_CODE_KEY = "room_code";
      //根据用户id获取用户key
      public final static String CACHE_USER_ID_KEY = "user_%d";
     //在线用户token key

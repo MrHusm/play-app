@@ -122,6 +122,7 @@
 						<value>/user/mobile/code.go</value>
 						<value>/user/mobile/login.go</value>
 						<value>/user/generate/userId.go</value>
+						<value>/user/generate/roomId.go</value>
 	                </list>
 	            </property>
 	        </bean>
