@@ -20,7 +20,7 @@
     <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
   </resultMap>
   <sql id="Base_Where">
-    <if test="userId != null"> and user_id= #{userId}</if>
+    <if test="userId != null">and ownner_id= #{userId}</if>
     <if test="tagType != null"> and tag_type= #{tagType}</if>
   </sql>
   <sql id="Base_Column_List" >

@@ -21,6 +21,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
@@ -50,6 +51,7 @@ public class ChatroomController extends BaseController {
      * @return
      * @throws ServiceException
      */
+    @ResponseBody
     @RequestMapping(value = "/create", method = {RequestMethod.POST})
     public ResultResponse create(@RequestParam(required = true) String name, @RequestParam(required = true) Integer tagType)
             throws ServiceException {
@@ -64,6 +66,7 @@ public class ChatroomController extends BaseController {
      * 获取个人聊天室列表
      * @return
      */
+    @ResponseBody
     @RequestMapping(value = "/mine/list", method = {RequestMethod.GET})
     public ResultResponse mineList(){
         Long userId = this.getUserId();
@@ -75,6 +78,7 @@ public class ChatroomController extends BaseController {
      * 获取聊天室列表
      * @return
      */
+    @ResponseBody
     @RequestMapping(value = "/list", method = {RequestMethod.GET})
     public ResultResponse list(@RequestParam(required = false) Integer tagType, @RequestParam(required = true)Integer page){
         Long userId = this.getUserId();
@@ -94,6 +98,7 @@ public class ChatroomController extends BaseController {
      * @return
      * @throws ServiceException
      */
+    @ResponseBody
     @RequestMapping(value = "/join", method = {RequestMethod.POST})
     public ResultResponse join(@RequestParam(required = true) Integer roomId, @RequestParam(required = false) Integer pwd) throws ServiceException {
         Long userId = this.getUserId();
@@ -108,6 +113,7 @@ public class ChatroomController extends BaseController {
      * @return
      * @throws ServiceException
      */
+    @ResponseBody
     @RequestMapping(value = "/leave", method = {RequestMethod.POST})
     public ResultResponse leave(@RequestParam(required = true) Integer roomId) throws ServiceException {
         Long userId = this.getUserId();
@@ -118,6 +124,7 @@ public class ChatroomController extends BaseController {
     /**
      * 上麦
      */
+    @ResponseBody
     @RequestMapping(value = "/mic/up", method = {RequestMethod.POST})
     public ResultResponse upMic(@RequestParam(required = true) Long micUserId, @RequestParam(required = true) Integer roomId, @RequestParam(required = true) Integer position) throws ServiceException {
         Long userId = this.getUserId();
@@ -128,6 +135,7 @@ public class ChatroomController extends BaseController {
     /**
      * 下麦
      */
+    @ResponseBody
     @RequestMapping(value = "/mic/down", method = {RequestMethod.POST})
     public ResultResponse downMic(@RequestParam(required = true) Long micUserId, @RequestParam(required = true) Integer roomId) throws ServiceException {
         Long userId = this.getUserId();
@@ -138,6 +146,7 @@ public class ChatroomController extends BaseController {
     /**
      * 取消排麦申请
      */
+    @ResponseBody
     @RequestMapping(value = "/mic/up/cancel", method = {RequestMethod.POST})
     public ResultResponse cancelUpMic(@RequestParam(required = true) Long micUserId, @RequestParam(required = true) Integer roomId) throws ServiceException {
         Long userId = this.getUserId();
@@ -148,6 +157,7 @@ public class ChatroomController extends BaseController {
     /**
      * 排麦列表
      */
+    @ResponseBody
     @RequestMapping(value = "/mic/queue", method = {RequestMethod.GET})
     public ResultResponse micQueue(@RequestParam(required = true) Integer roomId) throws ServiceException {
         Long userId = this.getUserId();
@@ -168,6 +178,7 @@ public class ChatroomController extends BaseController {
     /**
      * 用户禁言
      */
+    @ResponseBody
     @RequestMapping(value = "/add/nospeak", method = {RequestMethod.GET})
     public ResultResponse addNospeak(@RequestParam(required = true) Integer roomId, @RequestParam(required = true) Long userId, @RequestParam(required = true) Integer time) throws ServiceException {
         Long uid = this.getUserId();
@@ -178,6 +189,7 @@ public class ChatroomController extends BaseController {
     /**
      * 解除用户禁言
      */
+    @ResponseBody
     @RequestMapping(value = "/remove/nospeak", method = {RequestMethod.GET})
     public ResultResponse removeNospeak(@RequestParam(required = true) Integer roomId, @RequestParam(required = true) Long userId) throws ServiceException {
         Long uid = this.getUserId();
@@ -188,6 +200,7 @@ public class ChatroomController extends BaseController {
     /**
      * 禁言用户列表
      */
+    @ResponseBody
     @RequestMapping(value = "/nospeak/list", method = {RequestMethod.GET})
     public ResultResponse nospeakList(@RequestParam(required = true) Integer roomId) throws ServiceException {
         Long userId = this.getUserId();
@@ -198,6 +211,7 @@ public class ChatroomController extends BaseController {
     /**
      * 用户加入黑名单 踢出房间
      */
+    @ResponseBody
     @RequestMapping(value = "/add/black", method = {RequestMethod.GET})
     public ResultResponse addBlack(@RequestParam(required = true) Integer roomId, @RequestParam(required = true) Long userId, @RequestParam(required = true) Integer time) throws ServiceException {
         Long uid = this.getUserId();
@@ -208,6 +222,7 @@ public class ChatroomController extends BaseController {
     /**
      * 解除用户黑名单
      */
+    @ResponseBody
     @RequestMapping(value = "/remove/black", method = {RequestMethod.GET})
     public ResultResponse removeBlack(@RequestParam(required = true) Integer roomId, @RequestParam(required = true) Long userId) throws ServiceException {
         Long uid = this.getUserId();
@@ -218,6 +233,7 @@ public class ChatroomController extends BaseController {
     /**
      * 黑名单用户列表
      */
+    @ResponseBody
     @RequestMapping(value = "/black/list", method = {RequestMethod.GET})
     public ResultResponse blackList(@RequestParam(required = true) Integer roomId) throws ServiceException {
         Long userId = this.getUserId();
@@ -228,6 +244,7 @@ public class ChatroomController extends BaseController {
     /**
      * 关闭房间
      */
+    @ResponseBody
     @RequestMapping(value = "/close", method = {RequestMethod.GET})
     public ResultResponse close(@RequestParam(required = true) Integer roomId) throws ServiceException {
         Long userId = this.getUserId();
@@ -248,6 +265,7 @@ public class ChatroomController extends BaseController {
     /**
      * 编辑房间信息 开关心动值 上下麦方式
      */
+    @ResponseBody
     @RequestMapping(value = "/edit", method = {RequestMethod.GET})
     public ResultResponse edit(@RequestParam(required = true) Integer roomId, Chatroom chatroom) throws ServiceException {
         Long userId = this.getUserId();
@@ -277,8 +295,9 @@ public class ChatroomController extends BaseController {
      * @return
      * @throws ServiceException
      */
+    @ResponseBody
     @RequestMapping(value = "/delete/staff", method = {RequestMethod.GET})
-    public ResultResponse deleteStaff(@RequestParam(required = true)Long userId,@RequestParam(required = true)Integer roomId) throws ServiceException {
+    public ResultResponse deleteStaff(@RequestParam(required = true)Long userId, @RequestParam(required = true)Integer roomId) throws ServiceException {
         Long uid = this.getUserId();
         chatroomStaffService.deleteStaff(uid,roomId,userId);
         return resultResponse.success();
@@ -291,8 +310,9 @@ public class ChatroomController extends BaseController {
      * @return
      * @throws ServiceException
      */
+    @ResponseBody
     @RequestMapping(value = "/staff/list", method = {RequestMethod.GET})
-    public ResultResponse staffList(@RequestParam(required = true)Long roomId,@RequestParam(required = true)Integer type) throws ServiceException {
+    public ResultResponse staffList(@RequestParam(required = true)Long roomId, @RequestParam(required = true)Integer type) throws ServiceException {
         Long uid = this.getUserId();
         List<ChatroomStaffVO> list = chatroomStaffService.list(roomId,type);
         return resultResponse.success(list);
@@ -320,8 +340,9 @@ public class ChatroomController extends BaseController {
      * @return
      * @throws ServiceException
      */
+    @ResponseBody
     @RequestMapping(value = "/timer/stop", method = {RequestMethod.POST})
-    public ResultResponse stopTimer(@RequestParam(required = true) Integer roomId,@RequestParam(required = true) Integer position) throws ServiceException {
+    public ResultResponse stopTimer(@RequestParam(required = true) Integer roomId, @RequestParam(required = true) Integer position) throws ServiceException {
         Long userId = this.getUserId();
         chatroomService.stopTimer(userId, roomId, position);
         return resultResponse.success();
@@ -333,6 +354,7 @@ public class ChatroomController extends BaseController {
      * @return
      * @throws ServiceException
      */
+    @ResponseBody
     @RequestMapping(value = "/collect/add", method = {RequestMethod.POST})
     public ResultResponse addCollection(@RequestParam(required = true) Integer roomId) throws ServiceException {
         Long userId = this.getUserId();
@@ -360,8 +382,9 @@ public class ChatroomController extends BaseController {
      * @return
      * @throws ServiceException
      */
+    @ResponseBody
     @RequestMapping(value = "/lock", method = {RequestMethod.POST})
-    public ResultResponse lock(@RequestParam(required = true) Integer roomId,@RequestParam(required = true) Integer pwd) throws ServiceException {
+    public ResultResponse lock(@RequestParam(required = true) Integer roomId, @RequestParam(required = true) Integer pwd) throws ServiceException {
         Long userId = this.getUserId();
         chatroomService.lock(userId, roomId,pwd);
         return resultResponse.success();
@@ -374,6 +397,7 @@ public class ChatroomController extends BaseController {
      * @return
      * @throws ServiceException
      */
+    @ResponseBody
     @RequestMapping(value = "/unlock", method = {RequestMethod.POST})
     public ResultResponse unlock(@RequestParam(required = true) Integer roomId) throws ServiceException {
         Long userId = this.getUserId();
