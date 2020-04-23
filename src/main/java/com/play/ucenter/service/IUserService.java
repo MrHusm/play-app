@@ -164,4 +164,11 @@ public interface IUserService extends IBaseService<User,Long> {
      * 生成userId
      */
     void userIdGenerate(Long startUserId) throws ServiceException;
+
+    /**
+     * 生成roomId
+     * @param l
+     * @throws ServiceException
+     */
+    void roomIdGenerate(Long startRoomId)throws ServiceException;
 }

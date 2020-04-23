@@ -1,5 +1,6 @@
 package com.play.im.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.play.base.contants.RedisKeyConstants;
 import com.play.base.dao.IBaseDao;
 import com.play.base.exception.ServiceException;
@@ -19,6 +20,7 @@ import com.play.ucenter.view.UserMicVO;
 import com.play.ucenter.view.UserVO;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
@@ -45,9 +47,11 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     @Resource(name = "redisTemplate")
     private RedisTemplate<String, Chatroom> chatroomRedisTemplate;
     @Resource(name = "redisTemplate")
-    private RedisTemplate<String, Long> redisTemplate;
+    private RedisTemplate<String, Long> longRedisTemplate;
     @Resource(name = "redisTemplate")
     private RedisTemplate<String, Integer> intRedisTemplate;
+    @Resource(name = "redisTemplate")
+    private RedisTemplate<String, String> stringRedisTemplate;
     @Resource(name = "redisTemplate")
     private RedisTemplate<String, UserMicVO> userMicRedisTemplate;
     @Resource(name = "redisTemplate")
@@ -61,12 +65,15 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     @Override
     public ChatroomVO getByRoomId(Integer roomId) {
         String key = String.format(RedisKeyConstants.CACHE_CHATROOM_ID_KEY,roomId);
-        Chatroom chatroom = chatroomRedisTemplate.opsForValue().get(key);
-        if(chatroom == null){
+        String chatroomJson = stringRedisTemplate.opsForValue().get(key);
+        Chatroom chatroom = null;
+        if(chatroomJson == null){
             chatroom = this.findUniqueByParams("roomId",roomId);
             if(chatroom != null){
-                chatroomRedisTemplate.opsForValue().set(key,chatroom,1, TimeUnit.HOURS);
+                stringRedisTemplate.opsForValue().set(key, JSON.toJSONString(chatroom),3, TimeUnit.HOURS);
             }
+        }else{
+            chatroom = JSON.parseObject(chatroomJson,Chatroom.class);
         }
         ChatroomVO chatroomVO = BeanUtils.copyProperties(ChatroomVO.class,chatroom);
         return chatroomVO;
@@ -79,10 +86,13 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
         if (privateList != null && privateList.size() > 0) {
             throw new ServiceException(ResultCustomMessage.F1005);
         }
-        Integer roomId = 1;
+        String key = RedisKeyConstants.CACHE_ROOM_CODE_KEY;
+        BoundSetOperations<String, Long> operations = longRedisTemplate.boundSetOps(key);
+        Number roomId = operations.randomMember();
+        operations.remove(userId);
         UserVO user = userService.getByUserId(userId,userId);
         Chatroom chatroom = new Chatroom();
-        chatroom.setRoomId(roomId);
+        chatroom.setRoomId(roomId.intValue());
         chatroom.setName(name);
         chatroom.setType(1);
         chatroom.setImgUrl(user.getHeadUrl());
@@ -103,7 +113,7 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
         chatroomStaff.setCreateDate(new Date());
         chatroomStaff.setUpdateDate(new Date());
         chatroomStaffService.save(chatroomStaff);
-        return roomId;
+        return roomId.intValue();
     }
 
     @Override
@@ -124,7 +134,7 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     public void join(Long userId, Integer roomId, Integer pwd) throws ServiceException {
         //查看用户是否在房间黑名单中
         String blackKey = String.format(RedisKeyConstants.CACHE_CHATROOM_BLACK_KEY, roomId);
-        List<Long> blackList = redisTemplate.opsForList().range(blackKey, 0, -1);
+        List<Long> blackList = longRedisTemplate.opsForList().range(blackKey, 0, -1);
         for (Long blackUid : blackList) {
             if (blackUid.longValue() == userId.longValue()) {
                 throw new ServiceException(ResultCustomMessage.F1006);
@@ -146,7 +156,7 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
         }
         //聊天室加锁
         String encryptKey = RedisKeyConstants.CACHE_CHATROOM_LOCK_KEY;
-        Double password = redisTemplate.opsForZSet().score(encryptKey, roomId);
+        Double password = longRedisTemplate.opsForZSet().score(encryptKey, roomId);
         if (password != null) {
             //聊天室加锁 游客需要进入
             if (!(roomUserRole.contains(1) || roomUserRole.contains(2) || roomUserRole.contains(3))) {
@@ -257,7 +267,7 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     public List<UserVO> userList(Long userId, Integer roomId) {
         //添加用户到房间用户列表中
         String roomUserKey = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_KEY, roomId);
-        Set<Long> userIds = redisTemplate.opsForZSet().rangeByScore(roomUserKey, 0, -1);
+        Set<Long> userIds = longRedisTemplate.opsForZSet().rangeByScore(roomUserKey, 0, -1);
         List<UserVO> users = new ArrayList<UserVO>();
         for (Long uid : userIds) {
             UserVO user = this.userService.getByUserId(userId, uid);
@@ -272,20 +282,20 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
         if (time == -1) {
             time = 999999;
         }
-        redisTemplate.opsForZSet().add(key, userId, System.currentTimeMillis() + time * 60 * 1000);
+        longRedisTemplate.opsForZSet().add(key, userId, System.currentTimeMillis() + time * 60 * 1000);
     }
 
     @Override
     public void removeNospeak(Long uid, Long userId, Integer roomId) {
         String key = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_NOSPEAK_KEY, roomId);
-        redisTemplate.opsForZSet().remove(key, userId);
+        longRedisTemplate.opsForZSet().remove(key, userId);
     }
 
     @Override
     public List<UserVO> nospeakList(Long userId, Integer roomId) {
         //添加用户到房间用户列表中
         String key = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_NOSPEAK_KEY, roomId);
-        Set<Long> userIds = redisTemplate.opsForZSet().rangeByScore(key, 0, -1);
+        Set<Long> userIds = longRedisTemplate.opsForZSet().rangeByScore(key, 0, -1);
         List<UserVO> users = new ArrayList<UserVO>();
         for (Long uid : userIds) {
             UserVO user = this.userService.getByUserId(userId, uid);
@@ -297,19 +307,19 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     @Override
     public void addBlack(Long uid, Long userId, Integer roomId, Integer time) {
         String blackKey = String.format(RedisKeyConstants.CACHE_CHATROOM_BLACK_KEY, roomId);
-        redisTemplate.opsForList().leftPush(blackKey, userId);
+        longRedisTemplate.opsForList().leftPush(blackKey, userId);
     }
 
     @Override
     public void removeBlack(Long uid, Long userId, Integer roomId) {
         String blackKey = String.format(RedisKeyConstants.CACHE_CHATROOM_BLACK_KEY, roomId);
-        redisTemplate.opsForList().remove(blackKey, 0, userId);
+        longRedisTemplate.opsForList().remove(blackKey, 0, userId);
     }
 
     @Override
     public List<UserVO> blackList(Long userId, Integer roomId) {
         String blackKey = String.format(RedisKeyConstants.CACHE_CHATROOM_BLACK_KEY, roomId);
-        List<Long> userIds = redisTemplate.opsForList().range(blackKey, 0, -1);
+        List<Long> userIds = longRedisTemplate.opsForList().range(blackKey, 0, -1);
         List<UserVO> users = new ArrayList<UserVO>();
         for (Long uid : userIds) {
             UserVO user = this.userService.getByUserId(userId, uid);
@@ -322,7 +332,7 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     public void leave(Integer roomId, Long userId) {
         //删除房间的用户信息
         String roomUserKey = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_KEY, roomId);
-        redisTemplate.opsForZSet().remove(roomUserKey, userId);
+        longRedisTemplate.opsForZSet().remove(roomUserKey, userId);
         //取消排麦
         cancelUpMic(userId, Integer.parseInt(roomId.toString()));
         //用户下麦
@@ -333,13 +343,13 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     public void close(Long userId, Integer roomId) {
         //删除房间所有用户信息
         String roomUserKey = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_KEY, roomId);
-        redisTemplate.delete(roomUserKey);
+        longRedisTemplate.delete(roomUserKey);
         //取消用户排麦
         String micKey = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_QUEUE_KEY, roomId);
-        redisTemplate.delete(micKey);
+        longRedisTemplate.delete(micKey);
         //所有用户下麦
         String roomMicKey = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_KEY, roomId);
-        redisTemplate.delete(roomMicKey);
+        longRedisTemplate.delete(roomMicKey);
         //关闭融云聊天室 TODO
         this.chatroomDao.updateRoomStatus(roomId,2);
     }
@@ -354,23 +364,23 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     public void updateChatroom(Chatroom chatroom) {
         this.update(chatroom);
         String key = String.format(RedisKeyConstants.CACHE_CHATROOM_ID_KEY,chatroom.getRoomId());
-        redisTemplate.delete(key);
+        longRedisTemplate.delete(key);
     }
 
     @Override
     public void startTimer(Long userId, Integer roomId, Integer position, Integer num) {
         String key = String.format(RedisKeyConstants.CACHE_CHATROOM_TIMER_POSITION_KEY,roomId,position);
-        ValueOperations<String, Long> valueOperations = redisTemplate.opsForValue();
+        ValueOperations<String, Long> valueOperations = longRedisTemplate.opsForValue();
         long time=(num+1)*1000;
         valueOperations.set(key, System.currentTimeMillis()+time);
-        redisTemplate.expire(key, time, TimeUnit.MILLISECONDS);
+        longRedisTemplate.expire(key, time, TimeUnit.MILLISECONDS);
         //发送融云倒计时消息 TODO
     }
 
     @Override
     public void stopTimer(Long userId, Integer roomId, Integer position) {
         String key = String.format(RedisKeyConstants.CACHE_CHATROOM_TIMER_POSITION_KEY,roomId,position);
-        redisTemplate.delete(key);
+        longRedisTemplate.delete(key);
         //发送融云倒计时停止消息 TODO
     }
 
@@ -424,24 +434,24 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
         String receiveDayKey = String.format(RedisKeyConstants.CACHE_CHATROOM_RANK_RECEIVE_DAY_KEY,roomId,day);
         String receiveKey = String.format(RedisKeyConstants.CACHE_RANK_RECEIVE_MONTH_KEY,month);
 
-        redisTemplate.opsForZSet().incrementScore(sendDayKey,userId,worth * targetUserIds.size());
-        redisTemplate.expire(sendDayKey,3,TimeUnit.DAYS);
-        redisTemplate.opsForZSet().incrementScore(sendWeekKey,userId,worth * targetUserIds.size());
-        redisTemplate.expire(sendWeekKey,7,TimeUnit.DAYS);
-        redisTemplate.opsForZSet().incrementScore(sendMonthKey,userId,worth * targetUserIds.size());
-        redisTemplate.expire(sendMonthKey,30,TimeUnit.DAYS);
-        redisTemplate.opsForZSet().incrementScore(sendKey,userId,worth * targetUserIds.size());
-        redisTemplate.expire(sendMonthKey,30,TimeUnit.DAYS);
+        longRedisTemplate.opsForZSet().incrementScore(sendDayKey,userId,worth * targetUserIds.size());
+        longRedisTemplate.expire(sendDayKey,3,TimeUnit.DAYS);
+        longRedisTemplate.opsForZSet().incrementScore(sendWeekKey,userId,worth * targetUserIds.size());
+        longRedisTemplate.expire(sendWeekKey,7,TimeUnit.DAYS);
+        longRedisTemplate.opsForZSet().incrementScore(sendMonthKey,userId,worth * targetUserIds.size());
+        longRedisTemplate.expire(sendMonthKey,30,TimeUnit.DAYS);
+        longRedisTemplate.opsForZSet().incrementScore(sendKey,userId,worth * targetUserIds.size());
+        longRedisTemplate.expire(sendMonthKey,30,TimeUnit.DAYS);
 
         for (Long targetUserId : targetUserIds) {
-            redisTemplate.opsForZSet().incrementScore(receiveDayKey,targetUserId,worth);
-            redisTemplate.expire(receiveDayKey,3,TimeUnit.DAYS);
-            redisTemplate.opsForZSet().incrementScore(receiveWeekKey,targetUserId,worth);
-            redisTemplate.expire(receiveWeekKey,7,TimeUnit.DAYS);
-            redisTemplate.opsForZSet().incrementScore(receiveMonthKey,targetUserId,worth);
-            redisTemplate.expire(receiveMonthKey,30,TimeUnit.DAYS);
-            redisTemplate.opsForZSet().incrementScore(receiveKey,targetUserId,worth);
-            redisTemplate.expire(receiveKey,30,TimeUnit.DAYS);
+            longRedisTemplate.opsForZSet().incrementScore(receiveDayKey,targetUserId,worth);
+            longRedisTemplate.expire(receiveDayKey,3,TimeUnit.DAYS);
+            longRedisTemplate.opsForZSet().incrementScore(receiveWeekKey,targetUserId,worth);
+            longRedisTemplate.expire(receiveWeekKey,7,TimeUnit.DAYS);
+            longRedisTemplate.opsForZSet().incrementScore(receiveMonthKey,targetUserId,worth);
+            longRedisTemplate.expire(receiveMonthKey,30,TimeUnit.DAYS);
+            longRedisTemplate.opsForZSet().incrementScore(receiveKey,targetUserId,worth);
+            longRedisTemplate.expire(receiveKey,30,TimeUnit.DAYS);
         }
     }
 
@@ -473,16 +483,16 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     private void joinRoom(Integer roomId, Long userId) {
         //用户所在房间key
         String userChatroomKey = RedisKeyConstants.CACHE_USER_CHATROOM_KEY;
-        Object oldRoomId = redisTemplate.opsForHash().get(userChatroomKey, userId);
+        Object oldRoomId = longRedisTemplate.opsForHash().get(userChatroomKey, userId);
         if (oldRoomId != null && Integer.parseInt(oldRoomId.toString()) != roomId.intValue()) {
             //离开原来房间
             leave(Integer.parseInt(oldRoomId.toString()), userId);
         }
         //添加用户到房间用户列表中
         String roomUserKey = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_KEY, roomId);
-        redisTemplate.opsForZSet().add(roomUserKey, userId, System.currentTimeMillis());
+        longRedisTemplate.opsForZSet().add(roomUserKey, userId, System.currentTimeMillis());
         //记录用户所在房间
-        redisTemplate.opsForHash().put(userChatroomKey, userId, roomId);
+        longRedisTemplate.opsForHash().put(userChatroomKey, userId, roomId);
     }
 
 

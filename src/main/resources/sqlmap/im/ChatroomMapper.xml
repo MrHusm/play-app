@@ -20,8 +20,9 @@
     <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
   </resultMap>
   <sql id="Base_Where">
-    <if test="userId != null">and ownner_id= #{userId}</if>
-    <if test="tagType != null"> and tag_type= #{tagType}</if>
+    <if test="userId != null">and ownner_id = #{userId}</if>
+    <if test="tagType != null"> and tag_type = #{tagType}</if>
+    <if test="roomId != null"> and room_id = #{roomId}</if>
   </sql>
   <sql id="Base_Column_List" >
     id, room_id, name, type, img_url, bg_img_url, notice, slogan, status, ownner_id, 

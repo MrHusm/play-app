@@ -88,7 +88,13 @@ public class ChatroomController extends BaseController {
         Map<String,Object> condition = new HashMap<String, Object>();
         condition.put("tagType",tagType);
         PageFinder<Chatroom> pageFinder = this.chatroomService.findPageFinderObjs(condition,query);
-        return resultResponse.success(pageFinder);
+        Map<String, Object> result = new HashMap<>();
+        result.put("chatrooms", pageFinder.getData());
+        result.put("hasPrevious", pageFinder.isHasPrevious());
+        result.put("hasNext", pageFinder.isHasNext());
+        result.put("pageNo", pageFinder.getPageNo());
+        result.put("rowCount", pageFinder.getRowCount());
+        return resultResponse.success(result);
     }
     /**
      * 加入聊天室
