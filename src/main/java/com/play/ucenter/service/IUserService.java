@@ -159,4 +159,9 @@ public interface IUserService extends IBaseService<User,Long> {
      * @return
      */
     List<GiftVO> getUserGiftWall(Long userId);
+
+    /**
+     * 生成userId
+     */
+    void userIdGenerate(Long startUserId) throws ServiceException;
 }

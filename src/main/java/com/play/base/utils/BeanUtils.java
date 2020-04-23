@@ -38,7 +38,7 @@ public class BeanUtils {
 			copyProperties(target, orig);
 			return (T)target;
 		}catch(Exception e) {
-			handleReflectionException(e);
+//			handleReflectionException(e);
 			return null;
 		}
 	}

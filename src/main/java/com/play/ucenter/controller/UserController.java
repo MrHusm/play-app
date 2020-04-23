@@ -69,6 +69,13 @@ public class UserController extends BaseController {
         return resultResponse.success();
     }
 
+    @ResponseBody
+    @RequestMapping(value = "/generate/userId")
+    public ResultResponse userIdGenerate() throws ServiceException {
+        userService.userIdGenerate(10000000L);
+        return resultResponse.success();
+    }
+
     /**
      * 手机号登录
      * @param mobile
@@ -151,17 +158,14 @@ public class UserController extends BaseController {
         Integer fansNum = this.userService.getRelationNum(2, userId);
         //用户在线时间
         String onlineTime = this.userService.getOnlineTime(userId);
-        userService.addUserGiftWall(userId, 1, 1);
         //用户礼物墙信息
         List<GiftVO> giftVOS = userService.getUserGiftWall(userId);
-
         userService.addVisit(mId, userId);
         data.put("user", user);
         data.put("relType", relType);
         data.put("fansNum", fansNum);
         data.put("onlineTime", onlineTime);
         data.put("giftWall", giftVOS);
-        //TODO 获取魅力值 贡献值
         return resultResponse.success(data);
     }
 
@@ -201,9 +205,15 @@ public class UserController extends BaseController {
         Long userId = this.getUserId();
         Query query = new Query();
         query.setPage(page);
-        query.setPage(limit);
+        query.setPageSize(limit);
         PageFinder pageFinder = userService.getRelationListByPager(type, userId, query);
-        return resultResponse.success(pageFinder);
+        Map<String, Object> result = new HashMap<>();
+        result.put("users", pageFinder.getData());
+        result.put("hasPrevious", pageFinder.isHasPrevious());
+        result.put("hasNext", pageFinder.isHasNext());
+        result.put("pageNo", pageFinder.getPageNo());
+        result.put("rowCount", pageFinder.getRowCount());
+        return resultResponse.success(result);
     }
 
     /**
@@ -224,7 +234,7 @@ public class UserController extends BaseController {
         data.put("fansNum", fansNum);
         data.put("friendNum", friendNum);
         data.put("visitNum", visitNum);
-        return resultResponse.success(user);
+        return resultResponse.success(data);
     }
 
 }

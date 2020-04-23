@@ -27,6 +27,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,8 @@ import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -56,7 +59,7 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
     @Resource(name = "redisTemplate")
     private RedisTemplate<String, String> stringRedisTemplate;
     @Resource(name = "redisTemplate")
-    private RedisTemplate<String, Long> userRelRedisTemplate;
+    private RedisTemplate<String, Long> longRedisTemplate;
     @Resource(name = "redisTemplate")
     private RedisTemplate<String, Integer> redisTemplate;
 
@@ -163,11 +166,15 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
         User user =  this.findUniqueByParams("mobile", mobile);
         if(user == null){
             //注册账号
-            //TODO 生成用户id 昵称 头像地址等信息
+            //TODO  昵称 头像地址等信息
             data.put("new",1);
-            loginUser.setUserId(1L);
-            loginUser.setNickName("1");
-            loginUser.setPrettyId(1L);
+            String key = RedisKeyConstants.CACHE_USER_CODE_KEY;
+            BoundSetOperations<String, Long> operations = longRedisTemplate.boundSetOps(key);
+            Number userId = operations.randomMember();
+            operations.remove(userId);
+            loginUser.setUserId(userId.longValue());
+            loginUser.setNickName(userId.toString());
+            loginUser.setPrettyId(userId.longValue());
             loginUser.setPwd("1");
             loginUser.setSex(0);
             loginUser.setHeadUrl("http://url");
@@ -179,7 +186,7 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
             loginUser.setUpdateDate(new Date());
 
             UserAccount userAccount = new UserAccount();
-            userAccount.setUserId(1L);
+            userAccount.setUserId(userId.longValue());
             userAccount.setCreateDate(new Date());
             userAccount.setUpdateDate(new Date());
             this.save(loginUser);
@@ -328,9 +335,9 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
             return 9; // 自己
         }
         String followKey = String.format(RedisKeyConstants.CACHE_USER_FOLLOW_KEY, userId);
-        boolean isFollow = userRelRedisTemplate.opsForZSet().score(followKey, toUserId) == null;
+        boolean isFollow = longRedisTemplate.opsForZSet().score(followKey, toUserId) == null;
         String beFollowKey = String.format(RedisKeyConstants.CACHE_USER_FOLLOW_KEY, toUserId);
-        boolean beFollow = userRelRedisTemplate.opsForZSet().score(beFollowKey, userId) == null;
+        boolean beFollow = longRedisTemplate.opsForZSet().score(beFollowKey, userId) == null;
         if (isFollow && beFollow) {
             return 2; // 好友
         }
@@ -362,15 +369,15 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
             default:
                 break;
         }
-        ZSetOperations<String, Long> operations = userRelRedisTemplate.opsForZSet();
-        return operations.size(key + userId).intValue();
+        ZSetOperations<String, Long> operations = longRedisTemplate.opsForZSet();
+        return operations.size(key).intValue();
     }
 
     @Override
     public void addVisit(Long mId, Long userId) {
         if (mId.longValue() != userId.longValue()) {
             String key = String.format(RedisKeyConstants.CACHE_USER_VISIT_KEY, userId);
-            ZSetOperations<String, Long> operations = userRelRedisTemplate.opsForZSet();
+            ZSetOperations<String, Long> operations = longRedisTemplate.opsForZSet();
             long nowTimestamp = System.currentTimeMillis();
             operations.add(key, mId, nowTimestamp);
         }
@@ -380,7 +387,7 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
     public void addFollow(Long mId, Long userId) {
         String followKey = String.format(RedisKeyConstants.CACHE_USER_FOLLOW_KEY, mId);
         String fansKey = String.format(RedisKeyConstants.CACHE_USER_FANS_KEY, userId);
-        ZSetOperations<String, Long> operations = userRelRedisTemplate.opsForZSet();
+        ZSetOperations<String, Long> operations = longRedisTemplate.opsForZSet();
         long nowTimestamp = System.currentTimeMillis();
         operations.add(followKey, userId, nowTimestamp);
         operations.add(fansKey, mId, nowTimestamp);
@@ -400,7 +407,7 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
         String fansKey = String.format(RedisKeyConstants.CACHE_USER_FANS_KEY, userId);
         String friendKeyOne = String.format(RedisKeyConstants.CACHE_USER_FRIEND_KEY, mId);
         String friendKeyTwo = String.format(RedisKeyConstants.CACHE_USER_FRIEND_KEY, userId);
-        ZSetOperations<String, Long> operations = userRelRedisTemplate.opsForZSet();
+        ZSetOperations<String, Long> operations = longRedisTemplate.opsForZSet();
         operations.remove(followKey, userId);
         operations.remove(fansKey, mId);
         operations.remove(friendKeyOne, userId);
@@ -426,17 +433,19 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
             default:
                 break;
         }
-        ZSetOperations<String, Long> operations = userRelRedisTemplate.opsForZSet();
-        int total = operations.size(key + userId).intValue();
+        ZSetOperations<String, Long> operations = longRedisTemplate.opsForZSet();
+        int total = operations.size(key).intValue();
         Set<ZSetOperations.TypedTuple<Long>> userIds = operations.reverseRangeWithScores(key, query.getOffset(), query.getOffset() + query.getPageSize() - 1);
         List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
         for (ZSetOperations.TypedTuple<Long> id : userIds) {
             Map<String, Object> data = new HashMap<String, Object>();
-            UserVO user = this.getByUserId(userId, id.getValue());
+            UserVO user = this.getByUserId(userId, Long.parseLong(String.valueOf(id.getValue())));
             data.put("user", user);
-            data.put("date", id.getScore());
+            Date date = new Date(id.getScore().longValue());
+            data.put("date", DateUtil.format(date, "yyyy-MM-dd HH:mm:ss"));
+            list.add(data);
         }
-        return new PageFinder(query.getPage(), query.getPageSize(), total, new ArrayList(list));
+        return new PageFinder(query.getPage(), query.getPageSize(), total, list);
     }
 
     @Override
@@ -556,5 +565,32 @@ public class UserServiceImpl extends BaseServiceImpl<User, Long> implements IUse
         }).collect(Collectors.toList());
     }
 
-
+    @Override
+    public void userIdGenerate(Long startUserId) throws ServiceException {
+        String key = RedisKeyConstants.CACHE_USER_CODE_KEY;
+        BoundSetOperations<String, Long> operations = longRedisTemplate.boundSetOps(key);
+        Long userIdNum = operations.size();
+        if (userIdNum > 20000) {
+            throw new ServiceException(ResultCustomMessage.F1014);
+        }
+        // 判断是否幸运号（3位同号 + 4位连号）
+        String sameNumberRegex = "^\\d*([0-9])\\1{2,}\\d*$" + // 连续相同数字
+                "|\\d*(0(?=1)|1(?=2)|2(?=3)|3(?=4)|4(?=5)|5(?=6)|6(?=7)|7(?=8)|8(?=9)){4,}\\d" + // 连续递增数字
+                "|\\d*(9(?=8)|8(?=7)|7(?=6)|6(?=5)|5(?=4)|4(?=3)|3(?=2)|2(?=1)|1(?=0)){4,}\\d"; // 连续递减数字
+        Pattern pattern = Pattern.compile(sameNumberRegex);
+        List<Long> listSerialNo = new ArrayList<Long>();
+        for (int i = 1; i <= 1000000; i++) {
+            Long mId = startUserId + i;
+            Matcher match = pattern.matcher(String.valueOf(mId));
+            if (!match.find()) {
+                listSerialNo.add(mId);
+            }
+            // 一次调用生成编号
+            if (listSerialNo.size() == 10000 || i == 1000000) {
+                operations.add(listSerialNo.toArray(new Long[0]));
+                listSerialNo.clear();
+                break;
+            }
+        }
+    }
 }
