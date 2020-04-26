@@ -23,14 +23,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Created by lenovo on 2020/4/1.
@@ -45,21 +46,22 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     private IChatroomStaffService chatroomStaffService;
 
     @Resource(name = "redisTemplate")
-    private RedisTemplate<String, Chatroom> chatroomRedisTemplate;
-    @Resource(name = "redisTemplate")
     private RedisTemplate<String, Long> longRedisTemplate;
     @Resource(name = "redisTemplate")
     private RedisTemplate<String, Integer> intRedisTemplate;
     @Resource(name = "redisTemplate")
     private RedisTemplate<String, String> stringRedisTemplate;
-    @Resource(name = "redisTemplate")
-    private RedisTemplate<String, UserMicVO> userMicRedisTemplate;
-    @Resource(name = "redisTemplate")
-    private RedisTemplate<String, RoomMicVO> roomMicRedisTemplate;
 
     @Override
     public IBaseDao<Chatroom> getBaseDao() {
         return chatroomDao;
+    }
+
+    private static Set<Long> adminUserIds = new HashSet<>();
+
+    static {
+        adminUserIds.add(66666666L);
+        adminUserIds.add(88888888L);
     }
 
     @Override
@@ -131,7 +133,7 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     }
 
     @Override
-    public void join(Long userId, Integer roomId, Integer pwd) throws ServiceException {
+    public Map<String, Object> getRoomInfo(Long userId, Integer roomId, Integer pwd) throws ServiceException {
         //查看用户是否在房间黑名单中
         String blackKey = String.format(RedisKeyConstants.CACHE_CHATROOM_BLACK_KEY, roomId);
         List<Long> blackList = longRedisTemplate.opsForList().range(blackKey, 0, -1);
@@ -165,40 +167,110 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
                 }
             }
         }
+        Map<String, Object> result = new HashMap<>();
+        result.put("chatroom", chatroomVO);
         //获取排麦用户队列
         String micKey = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_QUEUE_KEY, roomId);
-        List<UserMicVO> userMicVOS = userMicRedisTemplate.opsForList().range(micKey, 0, -1);
+        List<String> userMicJsons = stringRedisTemplate.opsForList().range(micKey, 0, -1);
+        List<UserMicVO> userMicVOS = userMicJsons.stream().map(userMicJson -> JSON.parseObject(userMicJson, UserMicVO.class)).collect(Collectors.toList());
+        result.put("userMics", userMicVOS);
 
-        //进入到聊天室 缓存数据 获取声网token  channelName
+        //进入到聊天室 缓存数据 获取声网token  channelName TODO
 //        AgoraChannelDto agoraChannelDto = agoraService.getChatroomAgoraChannel(userId, roomId, flag);
-
-        //聊天室热度值
-//        Integer hotValue = roomGiftService.getChatroomActive(roomId);
-//        Integer nobilityScore = 0;
-//
-//        //未隐身状态加爵位人气
-//        if (!hideRoomOnline) {
-//            nobilityScore = getJoinScoreByNobility(loginUserInfoDto.getNobilityInfo());
-//            hotValue += nobilityScore + 10;
-//        }
-//
-//        chatroomInfo.setOnlineUserCount(hotValue);
-//
-//        // 公屏消息状态 1：显示 2：隐藏
-//        Integer msgStatus = chatRoomCache.getMsgStatus(roomId);
-//        chatroomInfo.setMsgStatus(msgStatus);
-
-        //进入房间(异步)
-        this.joinRoom(roomId, userId);
-        //获取麦位信息
-        List<RoomMicVO> roomMicVOS = getRoomMicInfo(roomId);
-
-//        if (type == 0 && !(roomUserRole.contains(UserRoleEnum.ANONYM.getRole())) && !hideRoomOnline) {
-//            //第一次进入发送融云消息：某人进入房间，浮窗模式进入不发送融云消息
-//            messageChatroomService.publishJoinOrLeaveChatroomV2(roomId, userId, "joinRoom", loginUserInfoDto, hotValue, userId + "进入房间");
-//        }
-
+        return result;
     }
+
+    /**
+     * 获取房间麦位信息
+     *
+     * @param roomId
+     */
+    @Async
+    @Override
+    public Future<List<RoomMicVO>> getRoomMicInfo(Integer roomId) {
+        String roomMicKey = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_KEY, roomId);
+        List<String> roomMicJsons = stringRedisTemplate.opsForList().range(roomMicKey, 0, -1);
+        List<RoomMicVO> roomMicVOS = roomMicJsons.stream().map(roomMicJson -> JSON.parseObject(roomMicJson, RoomMicVO.class)).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(roomMicVOS)) {
+            //初始化麦位信息
+            for (int i = 0; i < 9; i++) {
+                RoomMicVO roomMicVO = new RoomMicVO();
+                stringRedisTemplate.opsForList().leftPush(roomMicKey, JSON.toJSONString(roomMicVO));
+                roomMicVOS.add(roomMicVO);
+            }
+        }
+        Long now = System.currentTimeMillis();
+        List<Object> hks = Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8);
+        //获取麦位心动值
+        String heartKey = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_HEART_KEY, roomId);
+        List<Object> heartValues = intRedisTemplate.opsForHash().multiGet(heartKey, hks);
+        //获取麦位状态
+        String micStatusKey = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_STATUS_KEY, roomId);
+        List<Object> micStatusValues = intRedisTemplate.opsForHash().multiGet(micStatusKey, hks);
+        //获取麦位倒计时
+        List<String> timerKeys = new ArrayList<>();
+        for (int i = 0; i < 9; i++) {
+            String timerKey = String.format(RedisKeyConstants.CACHE_CHATROOM_TIMER_POSITION_KEY, roomId, i);
+            timerKeys.add(timerKey);
+        }
+        List<Long> timers = longRedisTemplate.opsForValue().multiGet(timerKeys);
+        for (int i = 0; i < roomMicVOS.size(); i++) {
+            RoomMicVO roomMicVO = roomMicVOS.get(i);
+            //麦位心动值
+            Object heartValue = heartValues.get(i);
+            if (heartValue != null) {
+                roomMicVO.setHeartValue(Integer.parseInt(heartValue.toString()));
+            } else {
+                roomMicVO.setHeartValue(0);
+            }
+            //麦位倒计时
+            Long timer = timers.get(i);
+            if (timer != null) {
+                Long endTime = (timer - now) / 1000;
+                roomMicVO.setEndTime(endTime.intValue());
+            } else {
+                roomMicVO.setEndTime(0);
+            }
+            //麦位状态
+            Object micStatusValue = micStatusValues.get(i);
+            if (micStatusValue != null) {
+                roomMicVO.setMicStatus(1);
+            } else {
+                roomMicVO.setMicStatus(0);
+            }
+        }
+        return new AsyncResult<List<RoomMicVO>>(roomMicVOS);
+    }
+
+    /**
+     * 加入房间
+     *
+     * @param roomId
+     * @param userId
+     */
+    @Async
+    @Override
+    public void joinRoom(Integer roomId, Long userId) {
+        //用户所在房间key
+        String userChatroomKey = RedisKeyConstants.CACHE_USER_CHATROOM_KEY;
+        Object oldRoomId = longRedisTemplate.opsForHash().get(userChatroomKey, userId);
+        if (oldRoomId != null && Integer.parseInt(oldRoomId.toString()) != roomId.intValue()) {
+            //离开原来房间
+            leave(Integer.parseInt(oldRoomId.toString()), userId);
+        }
+        if (!adminUserIds.contains(userId)) {
+            //添加用户到房间用户列表中
+            String roomUserKey = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_KEY, roomId);
+            longRedisTemplate.opsForZSet().add(roomUserKey, userId, System.currentTimeMillis());
+            //记录用户所在房间
+            longRedisTemplate.opsForHash().put(userChatroomKey, userId, roomId);
+        }
+        //发送聊天消息 TODO
+        if (!adminUserIds.contains(userId)) {
+            //messageChatroomService.publishJoinOrLeaveChatroomV2(roomId, userId, "joinRoom", loginUserInfoDto, hotValue, userId + "进入房间");
+        }
+    }
+
 
     @Override
     public void upMic(Long userId, Long micUserId, Integer roomId, Integer position) throws ServiceException {
@@ -209,11 +281,11 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
             UserMicVO userMicVO = BeanUtils.copyProperties(UserMicVO.class, user);
             userMicVO.setPosition(position);
             String micKey = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_QUEUE_KEY, roomId);
-            userMicRedisTemplate.opsForList().leftPush(micKey, userMicVO);
+            stringRedisTemplate.opsForList().leftPush(micKey, JSON.toJSONString(userMicVO));
         } else {
             //自由上麦 或者主持人操作
             String roomMicKey = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_KEY, roomId);
-            RoomMicVO roomMicVO = roomMicRedisTemplate.opsForList().index(roomMicKey, position);
+            RoomMicVO roomMicVO = JSON.parseObject(stringRedisTemplate.opsForList().index(roomMicKey, position), RoomMicVO.class);
             if (roomMicVO.getUserId() != null) {
                 throw new ServiceException(ResultCustomMessage.F1010);
             }
@@ -221,14 +293,15 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
             roomMicVO.setPrettyId(user.getPrettyId());
             roomMicVO.setNickName(user.getNickName());
             roomMicVO.setHeadUrl(user.getHeadUrl());
-            roomMicRedisTemplate.opsForList().set(roomMicKey, position, roomMicVO);
+            stringRedisTemplate.opsForList().set(roomMicKey, position, JSON.toJSONString(roomMicVO));
         }
     }
 
     @Override
     public void downMic(Long micUserId, Integer roomId) {
         String roomMicKey = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_KEY, roomId);
-        List<RoomMicVO> roomMicVOS = roomMicRedisTemplate.opsForList().range(roomMicKey, 0, -1);
+        List<String> roomMicJsons = stringRedisTemplate.opsForList().range(roomMicKey, 0, -1);
+        List<RoomMicVO> roomMicVOS = roomMicJsons.stream().map(roomMicJson -> JSON.parseObject(roomMicJson, RoomMicVO.class)).collect(Collectors.toList());
         for (int i = 0; i < roomMicVOS.size(); i++) {
             RoomMicVO roomMicVO = roomMicVOS.get(i);
             if (roomMicVO.getUserId() != null && roomMicVO.getUserId().intValue() == micUserId.intValue()) {
@@ -236,7 +309,7 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
                 roomMicVO.setPrettyId(null);
                 roomMicVO.setNickName(null);
                 roomMicVO.setHeadUrl(null);
-                roomMicRedisTemplate.opsForList().set(roomMicKey, i, roomMicVO);
+                stringRedisTemplate.opsForList().set(roomMicKey, i, JSON.toJSONString(roomMicVO));
                 //发送下麦消息 TODO
 
             }
@@ -246,10 +319,11 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     @Override
     public void cancelUpMic(Long micUserId, Integer roomId) {
         String micKey = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_QUEUE_KEY, roomId);
-        List<UserMicVO> userMicVOS = userMicRedisTemplate.opsForList().range(micKey, 0, -1);
+        List<String> userMicJsons = stringRedisTemplate.opsForList().range(micKey, 0, -1);
+        List<UserMicVO> userMicVOS = userMicJsons.stream().map(userMicJson -> JSON.parseObject(userMicJson, UserMicVO.class)).collect(Collectors.toList());
         for (UserMicVO userMicVO : userMicVOS) {
             if (userMicVO.getUserId().longValue() == micUserId) {
-                userMicRedisTemplate.opsForList().remove(micKey, 0, userMicVO);
+                stringRedisTemplate.opsForList().remove(micKey, 0, JSON.toJSONString(userMicVO));
                 //发送取消排麦消息 TODO
                 break;
             }
@@ -259,7 +333,8 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     @Override
     public List<UserMicVO> roomMicQueue(Integer roomId) {
         String micKey = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_QUEUE_KEY, roomId);
-        List<UserMicVO> userMicVOS = userMicRedisTemplate.opsForList().range(micKey, 0, -1);
+        List<String> userMicJsons = stringRedisTemplate.opsForList().range(micKey, 0, -1);
+        List<UserMicVO> userMicVOS = userMicJsons.stream().map(userMicJson -> JSON.parseObject(userMicJson, UserMicVO.class)).collect(Collectors.toList());
         return userMicVOS;
     }
 
@@ -385,6 +460,20 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     }
 
     @Override
+    public void openMic(Long userId, Integer roomId, Integer position) {
+        String key = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_STATUS_KEY, roomId);
+        intRedisTemplate.opsForHash().put(key, position, 1);
+        //发送融云开启麦位消息 TODO
+    }
+
+    @Override
+    public void closeMic(Long userId, Integer roomId, Integer position) {
+        String key = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_STATUS_KEY, roomId);
+        intRedisTemplate.opsForHash().delete(key, position);
+        //发送融云关闭麦位消息 TODO
+    }
+
+    @Override
     public void lock(Long userId, Integer roomId, Integer pwd) {
         String key = RedisKeyConstants.CACHE_CHATROOM_LOCK_KEY;
         intRedisTemplate.opsForZSet().add(key,roomId, pwd);
@@ -453,46 +542,6 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
             longRedisTemplate.opsForZSet().incrementScore(receiveKey,targetUserId,worth);
             longRedisTemplate.expire(receiveKey,30,TimeUnit.DAYS);
         }
-    }
-
-    /**
-     * 获取房间麦位信息
-     *
-     * @param roomId
-     */
-    private List<RoomMicVO> getRoomMicInfo(Integer roomId) {
-        String roomMicKey = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_KEY, roomId);
-        List<RoomMicVO> roomMicVOS = roomMicRedisTemplate.opsForList().range(roomMicKey, 0, -1);
-        if (CollectionUtils.isEmpty(roomMicVOS)) {
-            //初始化麦位信息
-            for (int i = 0; i < 9; i++) {
-                RoomMicVO roomMicVO = new RoomMicVO();
-                roomMicRedisTemplate.opsForList().leftPush(roomMicKey, roomMicVO);
-                roomMicVOS.add(roomMicVO);
-            }
-        }
-        return roomMicVOS;
-    }
-
-    /**
-     * 加入房间
-     *
-     * @param roomId
-     * @param userId
-     */
-    private void joinRoom(Integer roomId, Long userId) {
-        //用户所在房间key
-        String userChatroomKey = RedisKeyConstants.CACHE_USER_CHATROOM_KEY;
-        Object oldRoomId = longRedisTemplate.opsForHash().get(userChatroomKey, userId);
-        if (oldRoomId != null && Integer.parseInt(oldRoomId.toString()) != roomId.intValue()) {
-            //离开原来房间
-            leave(Integer.parseInt(oldRoomId.toString()), userId);
-        }
-        //添加用户到房间用户列表中
-        String roomUserKey = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_KEY, roomId);
-        longRedisTemplate.opsForZSet().add(roomUserKey, userId, System.currentTimeMillis());
-        //记录用户所在房间
-        longRedisTemplate.opsForHash().put(userChatroomKey, userId, roomId);
     }
 
 

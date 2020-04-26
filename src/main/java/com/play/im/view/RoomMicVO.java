@@ -29,7 +29,7 @@ public class RoomMicVO {
     /**
      * 禁麦状态 0：未禁麦 1：禁麦
      */
-    private Integer status;
+    private Integer micStatus;
 
     /**
      * 倒计时结束时间
@@ -76,12 +76,12 @@ public class RoomMicVO {
         this.heartValue = heartValue;
     }
 
-    public Integer getStatus() {
-        return status;
+    public Integer getMicStatus() {
+        return micStatus;
     }
 
-    public void setStatus(Integer status) {
-        this.status = status;
+    public void setMicStatus(Integer micStatus) {
+        this.micStatus = micStatus;
     }
 
     public Integer getEndTime() {

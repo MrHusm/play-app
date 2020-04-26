@@ -50,6 +50,8 @@ public class RedisKeyConstants {
     public final static String CACHE_CHATROOM_TIMER_POSITION_KEY = "chatroom_timer_position_%d_%d";
     //聊天室麦位心动值key
     public final static String CACHE_CHATROOM_MIC_HEART_KEY = "chatroom_mic_heart_%d";
+    //聊天室麦位是否开启key
+    public final static String CACHE_CHATROOM_MIC_STATUS_KEY = "chatroom_mic_status_%d";
     //聊天室锁密码key
     public final static String CACHE_CHATROOM_LOCK_KEY = "chatroom_lock";
     //礼物key

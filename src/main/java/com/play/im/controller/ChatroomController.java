@@ -10,6 +10,7 @@ import com.play.im.service.IChatroomService;
 import com.play.im.service.IChatroomStaffService;
 import com.play.im.view.ChatroomStaffVO;
 import com.play.im.view.ChatroomVO;
+import com.play.im.view.RoomMicVO;
 import com.play.ucenter.service.IUserService;
 import com.play.ucenter.view.UserMicVO;
 import com.play.ucenter.view.UserVO;
@@ -27,6 +28,8 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * Created by lenovo on 2020/4/1.
@@ -108,8 +111,19 @@ public class ChatroomController extends BaseController {
     @RequestMapping(value = "/join", method = {RequestMethod.POST})
     public ResultResponse join(@RequestParam(required = true) Integer roomId, @RequestParam(required = false) Integer pwd) throws ServiceException {
         Long userId = this.getUserId();
-        chatroomService.join(userId, roomId, pwd);
-        return resultResponse.success();
+        //异步获取麦位信息
+        Future<List<RoomMicVO>> future = chatroomService.getRoomMicInfo(roomId);
+        Map<String, Object> result = chatroomService.getRoomInfo(userId, roomId, pwd);
+        //进入房间(异步)
+        chatroomService.joinRoom(roomId, userId);
+        try {
+            result.put("roomMics", future.get());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        return resultResponse.success(result);
     }
 
     /**
@@ -355,6 +369,37 @@ public class ChatroomController extends BaseController {
     }
 
     /**
+     * 开启禁麦
+     *
+     * @param roomId
+     * @param position 麦位
+     * @return
+     * @throws ServiceException
+     */
+    @RequestMapping(value = "/mic/open", method = {RequestMethod.POST})
+    public ResultResponse openMic(@RequestParam(required = true) Integer roomId, @RequestParam(required = true) Integer position) throws ServiceException {
+        Long userId = this.getUserId();
+        chatroomService.openMic(userId, roomId, position);
+        return resultResponse.success();
+    }
+
+    /**
+     * 关闭禁麦
+     *
+     * @param roomId
+     * @param position 麦位
+     * @return
+     * @throws ServiceException
+     */
+    @ResponseBody
+    @RequestMapping(value = "/mic/close", method = {RequestMethod.POST})
+    public ResultResponse closeMic(@RequestParam(required = true) Integer roomId, @RequestParam(required = true) Integer position) throws ServiceException {
+        Long userId = this.getUserId();
+        chatroomService.closeMic(userId, roomId, position);
+        return resultResponse.success();
+    }
+
+    /**
      * 用户收藏聊天室
      * @param roomId
      * @return
@@ -399,7 +444,6 @@ public class ChatroomController extends BaseController {
     /**
      * 聊天室解锁
      * @param roomId
-     * @param pwd
      * @return
      * @throws ServiceException
      */

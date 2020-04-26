@@ -1,5 +1,6 @@
 package com.play.im.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.play.base.contants.RedisKeyConstants;
 import com.play.base.dao.IBaseDao;
 import com.play.base.service.impl.BaseServiceImpl;
@@ -12,15 +13,14 @@ import com.play.ucenter.view.UserVO;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Created by lenovo on 2020/4/1.
@@ -32,9 +32,7 @@ public class ChatroomStaffServiceImpl extends BaseServiceImpl<ChatroomStaff, Lon
     @Autowired
     private IUserService userService;
     @Resource(name = "redisTemplate")
-    private RedisTemplate<String, ChatroomStaffVO> redisTemplate;
-    @Resource(name = "redisTemplate")
-    private RedisTemplate<String, ChatroomStaff> staffRedisTemplate;
+    private RedisTemplate<String, String> stringRedisTemplate;
 
     @Override
     public IBaseDao<ChatroomStaff> getBaseDao() {
@@ -45,17 +43,19 @@ public class ChatroomStaffServiceImpl extends BaseServiceImpl<ChatroomStaff, Lon
     public List<Integer> getRoomUserRole(Integer roomId, Long userId) {
         String key = String.format(RedisKeyConstants.CACHE_CHATROOM_STAFF_KEY, roomId);
         List<Integer> roles = new ArrayList<Integer>();
-        List<ChatroomStaff> staffs = staffRedisTemplate.opsForList().range(key, 0, -1);
-        if (staffs == null) {
+        List<String> staffJsons = stringRedisTemplate.opsForList().range(key, 0, -1);
+        List<ChatroomStaff> staffs = null;
+        if (CollectionUtils.isEmpty(staffJsons)) {
             staffs = this.findListByParams("roomId", roomId);
             for (ChatroomStaff staff : staffs) {
-                staffRedisTemplate.opsForList().leftPush(key, staff);
+                stringRedisTemplate.opsForList().leftPush(key, JSON.toJSONString(staff));
                 if (userId.longValue() == staff.getUserId().longValue()) {
                     roles.add(staff.getType());
                 }
             }
         } else {
-            for (ChatroomStaff staff : staffs) {
+            for (String staffJson : staffJsons) {
+                ChatroomStaff staff = JSON.parseObject(staffJson, ChatroomStaff.class);
                 if (staff.getUserId().longValue() == userId.longValue()) {
                     roles.add(staff.getType().intValue());
                 }
@@ -74,7 +74,7 @@ public class ChatroomStaffServiceImpl extends BaseServiceImpl<ChatroomStaff, Lon
         chatroomStaff.setUpdateDate(new Date());
         this.save(chatroomStaff);
         String key =String.format(RedisKeyConstants.CACHE_CHATROOM_STAFF_TYPE_KEY,roomId,type);
-        redisTemplate.delete(key);
+        stringRedisTemplate.delete(key);
     }
 
     @Override
@@ -82,17 +82,19 @@ public class ChatroomStaffServiceImpl extends BaseServiceImpl<ChatroomStaff, Lon
         this.chatroomStaffDao.deleteByRoomIdAndUserId(roomId,userId);
         String hostKey =String.format(RedisKeyConstants.CACHE_CHATROOM_STAFF_TYPE_KEY,roomId,2);
         String adminKey =String.format(RedisKeyConstants.CACHE_CHATROOM_STAFF_TYPE_KEY,roomId,3);
-        redisTemplate.delete(adminKey);
-        redisTemplate.delete(hostKey);
+        stringRedisTemplate.delete(adminKey);
+        stringRedisTemplate.delete(hostKey);
     }
 
     @Override
     public List<ChatroomStaffVO> list(Long roomId, Integer type) {
         String key =String.format(RedisKeyConstants.CACHE_CHATROOM_STAFF_TYPE_KEY,roomId,type);
-        List<ChatroomStaffVO> list = redisTemplate.opsForList().range(key,0,-1);
-        if(list == null){
+        List<String> staffJsons = stringRedisTemplate.opsForList().range(key, 0, -1);
+        List<ChatroomStaffVO> list = null;
+        if (CollectionUtils.isEmpty(staffJsons)) {
             List<ChatroomStaff> chatroomStaffs = this.findListByParams("roomId",roomId,"type",type);
             if(CollectionUtils.isNotEmpty(chatroomStaffs)){
+                list = new ArrayList<>();
                 for(ChatroomStaff chatroomStaff : chatroomStaffs){
                     UserVO user = this.userService.getByUserId(chatroomStaff.getUserId(),chatroomStaff.getUserId());
                     ChatroomStaffVO chatroomStaffVO = new ChatroomStaffVO();
@@ -103,10 +105,12 @@ public class ChatroomStaffServiceImpl extends BaseServiceImpl<ChatroomStaff, Lon
                     chatroomStaffVO.setNickName(user.getNickName());
                     chatroomStaffVO.setHeadUrl(user.getHeadUrl());
                     list.add(chatroomStaffVO);
-                    redisTemplate.opsForList().leftPush(key,chatroomStaffVO);
+                    stringRedisTemplate.opsForList().leftPush(key, JSON.toJSONString(chatroomStaffVO));
                 }
-                redisTemplate.expire(key,5, TimeUnit.HOURS);
+                stringRedisTemplate.expire(key, 5, TimeUnit.HOURS);
             }
+        } else {
+            list = staffJsons.stream().map(staffJson -> JSON.parseObject(staffJson, ChatroomStaffVO.class)).collect(Collectors.toList());
         }
         return list;
     }

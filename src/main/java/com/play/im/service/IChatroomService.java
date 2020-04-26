@@ -4,11 +4,13 @@ import com.play.base.exception.ServiceException;
 import com.play.base.service.IBaseService;
 import com.play.im.model.Chatroom;
 import com.play.im.view.ChatroomVO;
+import com.play.im.view.RoomMicVO;
 import com.play.ucenter.view.UserMicVO;
 import com.play.ucenter.view.UserVO;
 
-import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
 
 public interface IChatroomService extends IBaseService<Chatroom,Long> {
 
@@ -36,13 +38,21 @@ public interface IChatroomService extends IBaseService<Chatroom,Long> {
     List<ChatroomVO> getMineList(Long userId);
 
     /**
-     * 加入聊天室
+     * 获取聊天室信息 麦位信息 排麦信息等
      *
      * @param userId
      * @param roomId
      * @param pwd    聊天室密码
      */
-    void join(Long userId, Integer roomId, Integer pwd) throws ServiceException;
+    Map<String, Object> getRoomInfo(Long userId, Integer roomId, Integer pwd) throws ServiceException;
+
+    /**
+     * 加入聊天室
+     *
+     * @param roomId
+     * @param userId
+     */
+    void joinRoom(Integer roomId, Long userId);
 
     /**
      * 上麦
@@ -189,6 +199,23 @@ public interface IChatroomService extends IBaseService<Chatroom,Long> {
      */
     void stopTimer(Long userId, Integer roomId, Integer position);
 
+    /**
+     * 开启禁麦
+     *
+     * @param userId
+     * @param roomId
+     * @param position
+     */
+    void openMic(Long userId, Integer roomId, Integer position);
+
+    /**
+     * 关闭禁麦
+     *
+     * @param userId
+     * @param roomId
+     * @param position
+     */
+    void closeMic(Long userId, Integer roomId, Integer position);
 
     /**
      * 聊天室加锁
@@ -221,4 +248,14 @@ public interface IChatroomService extends IBaseService<Chatroom,Long> {
      * @param worth
      */
     void addUserRoomRank(Integer roomId, Long userId, List<Long> targetUserIds, Integer worth);
+
+
+    /**
+     * 获取聊天室麦位信息
+     *
+     * @param roomId
+     * @return
+     */
+    Future<List<RoomMicVO>> getRoomMicInfo(Integer roomId);
+
 }
