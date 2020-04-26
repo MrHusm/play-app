@@ -3,7 +3,9 @@ package com.play.im.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.play.base.contants.RedisKeyConstants;
 import com.play.base.dao.IBaseDao;
+import com.play.base.exception.ServiceException;
 import com.play.base.service.impl.BaseServiceImpl;
+import com.play.base.utils.ResultCustomMessage;
 import com.play.im.dao.IChatroomStaffDao;
 import com.play.im.model.ChatroomStaff;
 import com.play.im.service.IChatroomStaffService;
@@ -14,6 +16,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -64,24 +67,36 @@ public class ChatroomStaffServiceImpl extends BaseServiceImpl<ChatroomStaff, Lon
         return roles;
     }
 
+    @Transactional
     @Override
-    public void addStaff(Long uid,Integer roomId, Long userId, Integer type) {
+    public void addStaff(Long uid, Integer roomId, Long userId, Integer type) throws ServiceException {
+        //角色类型1：房主 2：主持 3：管理
+        List<Integer> roomUserRole = getRoomUserRole(roomId, uid);
+        if (!(roomUserRole.contains(1) || roomUserRole.contains(3))) {
+            throw new ServiceException(ResultCustomMessage.F1015);
+        }
         ChatroomStaff chatroomStaff = new ChatroomStaff();
         chatroomStaff.setUserId(userId);
         chatroomStaff.setRoomId(roomId);
         chatroomStaff.setType(type);
-        chatroomStaff.setUpdateDate(new Date());
+        chatroomStaff.setCreateDate(new Date());
         chatroomStaff.setUpdateDate(new Date());
         this.save(chatroomStaff);
-        String key =String.format(RedisKeyConstants.CACHE_CHATROOM_STAFF_TYPE_KEY,roomId,type);
+        String key = String.format(RedisKeyConstants.CACHE_CHATROOM_STAFF_TYPE_KEY, roomId, type);
         stringRedisTemplate.delete(key);
     }
 
+    @Transactional
     @Override
-    public void deleteStaff(Long uid, Integer roomId, Long userId) {
+    public void deleteStaff(Long uid, Integer roomId, Long userId) throws ServiceException {
+        //角色类型1：房主 2：主持 3：管理
+        List<Integer> roomUserRole = getRoomUserRole(roomId, uid);
+        if (!(roomUserRole.contains(1) || roomUserRole.contains(3))) {
+            throw new ServiceException(ResultCustomMessage.F1015);
+        }
         this.chatroomStaffDao.deleteByRoomIdAndUserId(roomId,userId);
-        String hostKey =String.format(RedisKeyConstants.CACHE_CHATROOM_STAFF_TYPE_KEY,roomId,2);
-        String adminKey =String.format(RedisKeyConstants.CACHE_CHATROOM_STAFF_TYPE_KEY,roomId,3);
+        String hostKey = String.format(RedisKeyConstants.CACHE_CHATROOM_STAFF_TYPE_KEY, roomId, 2);
+        String adminKey = String.format(RedisKeyConstants.CACHE_CHATROOM_STAFF_TYPE_KEY, roomId, 3);
         stringRedisTemplate.delete(adminKey);
         stringRedisTemplate.delete(hostKey);
     }
@@ -98,12 +113,13 @@ public class ChatroomStaffServiceImpl extends BaseServiceImpl<ChatroomStaff, Lon
                 for(ChatroomStaff chatroomStaff : chatroomStaffs){
                     UserVO user = this.userService.getByUserId(chatroomStaff.getUserId(),chatroomStaff.getUserId());
                     ChatroomStaffVO chatroomStaffVO = new ChatroomStaffVO();
-                    chatroomStaffVO.setId(chatroomStaff.getId());
                     chatroomStaffVO.setRoomId(chatroomStaff.getRoomId());
                     chatroomStaffVO.setUserId(user.getUserId());
                     chatroomStaffVO.setPrettyId(user.getPrettyId());
                     chatroomStaffVO.setNickName(user.getNickName());
                     chatroomStaffVO.setHeadUrl(user.getHeadUrl());
+                    chatroomStaffVO.setSex(user.getSex());
+                    chatroomStaffVO.setVipLevel(user.getVipLevel());
                     list.add(chatroomStaffVO);
                     stringRedisTemplate.opsForList().leftPush(key, JSON.toJSONString(chatroomStaffVO));
                 }

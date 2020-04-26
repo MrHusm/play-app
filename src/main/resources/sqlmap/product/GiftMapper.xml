@@ -10,7 +10,7 @@
     <result column="worth" property="worth" jdbcType="DECIMAL" />
     <result column="sort" property="sort" jdbcType="INTEGER" />
     <result column="heart_value" property="heartValue" jdbcType="INTEGER" />
-    <result column="status" property="status" jdbcType="BIT" />
+    <result column="status" property="status" jdbcType="INTEGER"/>
   </resultMap>
   <sql id="Base_Where">
     <if test="name != null and name !=''"> and name= #{name}</if>
@@ -36,8 +36,8 @@
       price, worth, sort, 
       heart_value, status)
     values (#{name,jdbcType=VARCHAR}, #{imageUrl,jdbcType=VARCHAR}, #{svgaUrl,jdbcType=VARCHAR}, 
-      #{price,jdbcType=DECIMAL}, #{worth,jdbcType=DECIMAL}, #{sort,jdbcType=INTEGER}, 
-      #{heartValue,jdbcType=INTEGER}, #{status,jdbcType=BIT})
+      #{price,jdbcType=DECIMAL}, #{worth,jdbcType=DECIMAL}, #{sort,jdbcType=INTEGER},
+    #{heartValue,jdbcType=INTEGER}, #{status,jdbcType=INTEGER})
   </insert>
   <insert id="insertSelective" parameterType="com.play.product.model.Gift" >
     <selectKey resultType="java.lang.Integer" keyProperty="id" order="AFTER" >
@@ -93,7 +93,7 @@
         #{heartValue,jdbcType=INTEGER},
       </if>
       <if test="status != null" >
-        #{status,jdbcType=BIT},
+        #{status,jdbcType=INTEGER},
       </if>
     </trim>
   </insert>
@@ -122,7 +122,7 @@
         heart_value = #{heartValue,jdbcType=INTEGER},
       </if>
       <if test="status != null" >
-        status = #{status,jdbcType=BIT},
+        status = #{status,jdbcType=INTEGER},
       </if>
     </set>
     where id = #{id,jdbcType=INTEGER}
@@ -136,7 +136,7 @@
       worth = #{worth,jdbcType=DECIMAL},
       sort = #{sort,jdbcType=INTEGER},
       heart_value = #{heartValue,jdbcType=INTEGER},
-      status = #{status,jdbcType=BIT}
+    status = #{status,jdbcType=INTEGER}
     where id = #{id,jdbcType=INTEGER}
   </update>
   <select id="getAll" resultMap="BaseResultMap" parameterType="map">

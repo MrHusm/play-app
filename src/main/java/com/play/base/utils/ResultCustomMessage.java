@@ -34,4 +34,6 @@ public class ResultCustomMessage extends ResultMessage{
     public static final ResultCustomMessage F1013 = new ResultCustomMessage(1013, "礼物数量不足");
 
     public static final ResultCustomMessage F1014 = new ResultCustomMessage(1014, "编号池足够大");
+
+    public static final ResultCustomMessage F1015 = new ResultCustomMessage(1015, "权限不足");
 }

@@ -1,5 +1,6 @@
 package com.play.im.service;
 
+import com.play.base.exception.ServiceException;
 import com.play.base.service.IBaseService;
 import com.play.im.model.ChatroomStaff;
 import com.play.im.view.ChatroomStaffVO;
@@ -23,7 +24,7 @@ public interface IChatroomStaffService extends IBaseService<ChatroomStaff,Long> 
      * @param userId
      * @param type 用户类型 1：房主 2：主持 3：管理
      */
-    void addStaff(Long uid,Integer roomId, Long userId, Integer type);
+    void addStaff(Long uid, Integer roomId, Long userId, Integer type) throws ServiceException;
 
     /**
      * 删除聊天室工作人员
@@ -31,7 +32,7 @@ public interface IChatroomStaffService extends IBaseService<ChatroomStaff,Long> 
      * @param roomId
      * @param userId
      */
-    void deleteStaff(Long uid, Integer roomId, Long userId);
+    void deleteStaff(Long uid, Integer roomId, Long userId) throws ServiceException;
 
     /**
      * 获取聊天室工作人员列表

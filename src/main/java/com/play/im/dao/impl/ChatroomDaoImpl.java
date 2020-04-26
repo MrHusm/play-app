@@ -6,7 +6,6 @@ import com.play.im.model.Chatroom;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,6 +17,7 @@ public class ChatroomDaoImpl extends BaseDaoImpl<Chatroom> implements IChatroomD
     public void updateRoomStatus(Integer roomId, Integer status) {
         Map<String,Object> param = new HashMap<String,Object>();
         param.put("status",status);
+        param.put("roomId", roomId);
         this.getSqlSessionTemplate().update("ChatroomMapper.updateRoomStatus",param);
     }
 }

@@ -2,6 +2,8 @@ package com.play.im.service;
 
 import com.play.base.exception.ServiceException;
 import com.play.base.service.IBaseService;
+import com.play.base.utils.PageFinder;
+import com.play.base.utils.Query;
 import com.play.im.model.Chatroom;
 import com.play.im.view.ChatroomVO;
 import com.play.im.view.RoomMicVO;
@@ -96,7 +98,7 @@ public interface IChatroomService extends IBaseService<Chatroom,Long> {
      * @param userId 查看人id
      * @param roomId
      */
-    List<UserVO> userList(Long userId, Integer roomId);
+    PageFinder<UserVO> getChatroomUsersByPage(Long userId, Integer roomId, Query query);
 
     /**
      * 用户禁言
@@ -106,7 +108,7 @@ public interface IChatroomService extends IBaseService<Chatroom,Long> {
      * @param roomId
      * @param time
      */
-    void addNospeak(Long uid, Long userId, Integer roomId, Integer time);
+    void addNospeak(Long uid, Long userId, Integer roomId, Integer time) throws ServiceException;
 
     /**
      * 解除用户禁言
@@ -115,7 +117,7 @@ public interface IChatroomService extends IBaseService<Chatroom,Long> {
      * @param userId
      * @param roomId
      */
-    void removeNospeak(Long uid, Long userId, Integer roomId);
+    void removeNospeak(Long uid, Long userId, Integer roomId) throws ServiceException;
 
     /**
      * 禁言用户列表
@@ -132,9 +134,8 @@ public interface IChatroomService extends IBaseService<Chatroom,Long> {
      * @param uid
      * @param userId
      * @param roomId
-     * @param time
      */
-    void addBlack(Long uid, Long userId, Integer roomId, Integer time);
+    void addBlack(Long uid, Long userId, Integer roomId) throws ServiceException;
 
     /**
      * 用户移除黑名单
@@ -167,20 +168,20 @@ public interface IChatroomService extends IBaseService<Chatroom,Long> {
      * @param userId
      * @param roomId
      */
-    void close(Long userId, Integer roomId);
+    void close(Long userId, Integer roomId) throws ServiceException;
 
     /**
      * 聊天室开启
      * @param userId
      * @param roomId
      */
-    void open(Long userId, Integer roomId);
+    void open(Long userId, Integer roomId) throws ServiceException;
 
     /**
      * 修改聊天室信息
      * @param chatroom
      */
-    void updateChatroom(Chatroom chatroom);
+    void updateChatroom(Long userId, ChatroomVO chatroom) throws ServiceException;
 
     /**
      * 开始麦位倒计时
@@ -189,7 +190,7 @@ public interface IChatroomService extends IBaseService<Chatroom,Long> {
      * @param position
      * @param num
      */
-    void startTimer(Long userId, Integer roomId, Integer position, Integer num);
+    void startTimer(Long userId, Integer roomId, Integer position, Integer num) throws ServiceException;
 
     /**
      * 停止麦位倒计时
@@ -197,7 +198,7 @@ public interface IChatroomService extends IBaseService<Chatroom,Long> {
      * @param roomId
      * @param position
      */
-    void stopTimer(Long userId, Integer roomId, Integer position);
+    void stopTimer(Long userId, Integer roomId, Integer position) throws ServiceException;
 
     /**
      * 开启禁麦
@@ -206,7 +207,7 @@ public interface IChatroomService extends IBaseService<Chatroom,Long> {
      * @param roomId
      * @param position
      */
-    void openMic(Long userId, Integer roomId, Integer position);
+    void openMic(Long userId, Integer roomId, Integer position) throws ServiceException;
 
     /**
      * 关闭禁麦
@@ -215,7 +216,7 @@ public interface IChatroomService extends IBaseService<Chatroom,Long> {
      * @param roomId
      * @param position
      */
-    void closeMic(Long userId, Integer roomId, Integer position);
+    void closeMic(Long userId, Integer roomId, Integer position) throws ServiceException;
 
     /**
      * 聊天室加锁
@@ -223,14 +224,14 @@ public interface IChatroomService extends IBaseService<Chatroom,Long> {
      * @param roomId
      * @param pwd
      */
-    void lock(Long userId, Integer roomId, Integer pwd);
+    void lock(Long userId, Integer roomId, Integer pwd) throws ServiceException;
 
     /**
      * 聊天室解锁
      * @param userId
      * @param roomId
      */
-    void unlock(Long userId, Integer roomId);
+    void unlock(Long userId, Integer roomId) throws ServiceException;
 
     /**
      * 增加麦位心动值

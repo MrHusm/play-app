@@ -5,9 +5,7 @@ import com.play.base.contants.RedisKeyConstants;
 import com.play.base.dao.IBaseDao;
 import com.play.base.exception.ServiceException;
 import com.play.base.service.impl.BaseServiceImpl;
-import com.play.base.utils.BeanUtils;
-import com.play.base.utils.DateUtil;
-import com.play.base.utils.ResultCustomMessage;
+import com.play.base.utils.*;
 import com.play.im.dao.IChatroomDao;
 import com.play.im.model.Chatroom;
 import com.play.im.model.ChatroomStaff;
@@ -23,9 +21,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -81,6 +81,7 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
         return chatroomVO;
     }
 
+    @Transactional
     @Override
     public Integer createChatroom(Long userId, String name, Integer tagType)  throws ServiceException {
         //查询个人厅数量
@@ -276,24 +277,31 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     public void upMic(Long userId, Long micUserId, Integer roomId, Integer position) throws ServiceException {
         ChatroomVO chatroomVO = this.getByRoomId(roomId);
         UserVO user = this.userService.getByUserId(micUserId, micUserId);
-        if (chatroomVO.getMicType() == 1 && userId.intValue() == micUserId) {
-            //审批上麦 非主持人操作 加入排麦队列
-            UserMicVO userMicVO = BeanUtils.copyProperties(UserMicVO.class, user);
-            userMicVO.setPosition(position);
-            String micKey = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_QUEUE_KEY, roomId);
-            stringRedisTemplate.opsForList().leftPush(micKey, JSON.toJSONString(userMicVO));
-        } else {
-            //自由上麦 或者主持人操作
+        //角色类型1：房主 2：主持 3：管理
+        List<Integer> roomUserRole = chatroomStaffService.getRoomUserRole(roomId, userId);
+        if (roomUserRole.contains(1) || roomUserRole.contains(2) || roomUserRole.contains(3) || chatroomVO.getMicType() == 2) {
+            //自由上麦 或者主持人、管理、房主操作
             String roomMicKey = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_KEY, roomId);
             RoomMicVO roomMicVO = JSON.parseObject(stringRedisTemplate.opsForList().index(roomMicKey, position), RoomMicVO.class);
             if (roomMicVO.getUserId() != null) {
                 throw new ServiceException(ResultCustomMessage.F1010);
             }
+            //下麦
+            downMic(micUserId, roomId);
+            //上麦
             roomMicVO.setUserId(user.getUserId());
             roomMicVO.setPrettyId(user.getPrettyId());
             roomMicVO.setNickName(user.getNickName());
             roomMicVO.setHeadUrl(user.getHeadUrl());
             stringRedisTemplate.opsForList().set(roomMicKey, position, JSON.toJSONString(roomMicVO));
+            //发送上麦消息 TODO
+        } else {
+            //审批上麦
+            UserMicVO userMicVO = BeanUtils.copyProperties(UserMicVO.class, user);
+            userMicVO.setPosition(position);
+            String micKey = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_QUEUE_KEY, roomId);
+            stringRedisTemplate.opsForList().leftPush(micKey, JSON.toJSONString(userMicVO));
+            //发送排麦消息 TODO
         }
     }
 
@@ -339,20 +347,27 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     }
 
     @Override
-    public List<UserVO> userList(Long userId, Integer roomId) {
+    public PageFinder<UserVO> getChatroomUsersByPage(Long userId, Integer roomId, Query query) {
         //添加用户到房间用户列表中
         String roomUserKey = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_KEY, roomId);
-        Set<Long> userIds = longRedisTemplate.opsForZSet().rangeByScore(roomUserKey, 0, -1);
+        ZSetOperations<String, Integer> operations = intRedisTemplate.opsForZSet();
+        int total = operations.size(roomUserKey).intValue();
+        Set<Integer> userIds = operations.reverseRange(roomUserKey, query.getOffset(), query.getOffset() + query.getPageSize() - 1);
         List<UserVO> users = new ArrayList<UserVO>();
-        for (Long uid : userIds) {
-            UserVO user = this.userService.getByUserId(userId, uid);
+        for (Integer uid : userIds) {
+            UserVO user = this.userService.getByUserId(userId, Long.valueOf(uid));
             users.add(user);
         }
-        return users;
+        return new PageFinder(query.getPage(), query.getPageSize(), total, users);
     }
 
     @Override
-    public void addNospeak(Long uid, Long userId, Integer roomId, Integer time) {
+    public void addNospeak(Long uid, Long userId, Integer roomId, Integer time) throws ServiceException {
+        //角色类型1：房主 2：主持 3：管理
+        List<Integer> roomUserRole = chatroomStaffService.getRoomUserRole(roomId, uid);
+        if (!(roomUserRole.contains(1) || roomUserRole.contains(2) || roomUserRole.contains(3))) {
+            throw new ServiceException(ResultCustomMessage.F1015);
+        }
         String key = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_NOSPEAK_KEY, roomId);
         if (time == -1) {
             time = 999999;
@@ -361,7 +376,12 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     }
 
     @Override
-    public void removeNospeak(Long uid, Long userId, Integer roomId) {
+    public void removeNospeak(Long uid, Long userId, Integer roomId) throws ServiceException {
+        //角色类型1：房主 2：主持 3：管理
+        List<Integer> roomUserRole = chatroomStaffService.getRoomUserRole(roomId, uid);
+        if (!(roomUserRole.contains(1) || roomUserRole.contains(2) || roomUserRole.contains(3))) {
+            throw new ServiceException(ResultCustomMessage.F1015);
+        }
         String key = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_NOSPEAK_KEY, roomId);
         longRedisTemplate.opsForZSet().remove(key, userId);
     }
@@ -380,7 +400,12 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     }
 
     @Override
-    public void addBlack(Long uid, Long userId, Integer roomId, Integer time) {
+    public void addBlack(Long uid, Long userId, Integer roomId) throws ServiceException {
+        //角色类型1：房主 2：主持 3：管理
+        List<Integer> roomUserRole = chatroomStaffService.getRoomUserRole(roomId, uid);
+        if (!(roomUserRole.contains(1) || roomUserRole.contains(2) || roomUserRole.contains(3))) {
+            throw new ServiceException(ResultCustomMessage.F1015);
+        }
         String blackKey = String.format(RedisKeyConstants.CACHE_CHATROOM_BLACK_KEY, roomId);
         longRedisTemplate.opsForList().leftPush(blackKey, userId);
     }
@@ -408,16 +433,29 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
         //删除房间的用户信息
         String roomUserKey = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_KEY, roomId);
         longRedisTemplate.opsForZSet().remove(roomUserKey, userId);
+        //删除记录用户所在的房间
+        String userChatroomKey = RedisKeyConstants.CACHE_USER_CHATROOM_KEY;
+        longRedisTemplate.opsForHash().delete(userChatroomKey, userId);
         //取消排麦
         cancelUpMic(userId, Integer.parseInt(roomId.toString()));
         //用户下麦
         downMic(userId, Integer.parseInt(roomId.toString()));
     }
 
+    @Transactional
     @Override
-    public void close(Long userId, Integer roomId) {
-        //删除房间所有用户信息
+    public void close(Long userId, Integer roomId) throws ServiceException {
+        //角色类型1：房主 2：主持 3：管理
+        List<Integer> roomUserRole = chatroomStaffService.getRoomUserRole(roomId, userId);
+        if (!(roomUserRole.contains(1) || roomUserRole.contains(2) || roomUserRole.contains(3))) {
+            throw new ServiceException(ResultCustomMessage.F1015);
+        }
         String roomUserKey = String.format(RedisKeyConstants.CACHE_CHATROOM_USER_KEY, roomId);
+        //删除记录用户所在的房间
+        Set<Integer> userIds = intRedisTemplate.opsForZSet().range(roomUserKey, 0, -1);
+        String userChatroomKey = RedisKeyConstants.CACHE_USER_CHATROOM_KEY;
+        intRedisTemplate.opsForHash().delete(userChatroomKey, userIds.toArray());
+        //删除房间所有用户信息
         longRedisTemplate.delete(roomUserKey);
         //取消用户排麦
         String micKey = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_QUEUE_KEY, roomId);
@@ -427,23 +465,57 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
         longRedisTemplate.delete(roomMicKey);
         //关闭融云聊天室 TODO
         this.chatroomDao.updateRoomStatus(roomId,2);
+        //删除聊天室缓存
+        String key = String.format(RedisKeyConstants.CACHE_CHATROOM_ID_KEY, roomId);
+        stringRedisTemplate.delete(key);
     }
 
+    @Transactional
     @Override
-    public void open(Long userId, Integer roomId) {
+    public void open(Long userId, Integer roomId) throws ServiceException {
+        //角色类型1：房主 2：主持 3：管理
+        List<Integer> roomUserRole = chatroomStaffService.getRoomUserRole(roomId, userId);
+        if (!(roomUserRole.contains(1) || roomUserRole.contains(2) || roomUserRole.contains(3))) {
+            throw new ServiceException(ResultCustomMessage.F1015);
+        }
         //开启融云聊天室 TODO
         this.chatroomDao.updateRoomStatus(roomId,1);
+        //删除聊天室缓存
+        String key = String.format(RedisKeyConstants.CACHE_CHATROOM_ID_KEY, roomId);
+        stringRedisTemplate.delete(key);
     }
 
+    @Transactional
     @Override
-    public void updateChatroom(Chatroom chatroom) {
-        this.update(chatroom);
+    public void updateChatroom(Long userId, ChatroomVO chatroom) throws ServiceException {
+        //角色类型1：房主 2：主持 3：管理
+        List<Integer> roomUserRole = chatroomStaffService.getRoomUserRole(chatroom.getRoomId(), userId);
+        if (!(roomUserRole.contains(1) || roomUserRole.contains(2) || roomUserRole.contains(3))) {
+            throw new ServiceException(ResultCustomMessage.F1015);
+        }
+        Chatroom room = new Chatroom();
+        room.setRoomId(chatroom.getRoomId());
+        room.setName(chatroom.getName());
+        room.setImgUrl(chatroom.getImgUrl());
+        room.setBgImgUrl(chatroom.getBgImgUrl());
+        room.setNotice(chatroom.getNotice());
+        room.setSlogan(chatroom.getSlogan());
+        room.setDisplayHeart(chatroom.getDisplayHeart());
+        room.setMicType(chatroom.getMicType());
+        room.setTagType(chatroom.getTagType());
+        room.setUpdateDate(new Date());
+        this.update(room);
         String key = String.format(RedisKeyConstants.CACHE_CHATROOM_ID_KEY,chatroom.getRoomId());
         longRedisTemplate.delete(key);
     }
 
     @Override
-    public void startTimer(Long userId, Integer roomId, Integer position, Integer num) {
+    public void startTimer(Long userId, Integer roomId, Integer position, Integer num) throws ServiceException {
+        //角色类型1：房主 2：主持 3：管理
+        List<Integer> roomUserRole = chatroomStaffService.getRoomUserRole(roomId, userId);
+        if (!(roomUserRole.contains(1) || roomUserRole.contains(2) || roomUserRole.contains(3))) {
+            throw new ServiceException(ResultCustomMessage.F1015);
+        }
         String key = String.format(RedisKeyConstants.CACHE_CHATROOM_TIMER_POSITION_KEY,roomId,position);
         ValueOperations<String, Long> valueOperations = longRedisTemplate.opsForValue();
         long time=(num+1)*1000;
@@ -453,35 +525,60 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
     }
 
     @Override
-    public void stopTimer(Long userId, Integer roomId, Integer position) {
+    public void stopTimer(Long userId, Integer roomId, Integer position) throws ServiceException {
+        //角色类型1：房主 2：主持 3：管理
+        List<Integer> roomUserRole = chatroomStaffService.getRoomUserRole(roomId, userId);
+        if (!(roomUserRole.contains(1) || roomUserRole.contains(2) || roomUserRole.contains(3))) {
+            throw new ServiceException(ResultCustomMessage.F1015);
+        }
         String key = String.format(RedisKeyConstants.CACHE_CHATROOM_TIMER_POSITION_KEY,roomId,position);
         longRedisTemplate.delete(key);
         //发送融云倒计时停止消息 TODO
     }
 
     @Override
-    public void openMic(Long userId, Integer roomId, Integer position) {
+    public void openMic(Long userId, Integer roomId, Integer position) throws ServiceException {
+        //角色类型1：房主 2：主持 3：管理
+        List<Integer> roomUserRole = chatroomStaffService.getRoomUserRole(roomId, userId);
+        if (!(roomUserRole.contains(1) || roomUserRole.contains(2) || roomUserRole.contains(3))) {
+            throw new ServiceException(ResultCustomMessage.F1015);
+        }
         String key = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_STATUS_KEY, roomId);
         intRedisTemplate.opsForHash().put(key, position, 1);
         //发送融云开启麦位消息 TODO
     }
 
     @Override
-    public void closeMic(Long userId, Integer roomId, Integer position) {
+    public void closeMic(Long userId, Integer roomId, Integer position) throws ServiceException {
+        //角色类型1：房主 2：主持 3：管理
+        List<Integer> roomUserRole = chatroomStaffService.getRoomUserRole(roomId, userId);
+        if (!(roomUserRole.contains(1) || roomUserRole.contains(2) || roomUserRole.contains(3))) {
+            throw new ServiceException(ResultCustomMessage.F1015);
+        }
         String key = String.format(RedisKeyConstants.CACHE_CHATROOM_MIC_STATUS_KEY, roomId);
         intRedisTemplate.opsForHash().delete(key, position);
         //发送融云关闭麦位消息 TODO
     }
 
     @Override
-    public void lock(Long userId, Integer roomId, Integer pwd) {
+    public void lock(Long userId, Integer roomId, Integer pwd) throws ServiceException {
+        //角色类型1：房主 2：主持 3：管理
+        List<Integer> roomUserRole = chatroomStaffService.getRoomUserRole(roomId, userId);
+        if (!(roomUserRole.contains(1) || roomUserRole.contains(2) || roomUserRole.contains(3))) {
+            throw new ServiceException(ResultCustomMessage.F1015);
+        }
         String key = RedisKeyConstants.CACHE_CHATROOM_LOCK_KEY;
         intRedisTemplate.opsForZSet().add(key,roomId, pwd);
 
     }
 
     @Override
-    public void unlock(Long userId, Integer roomId) {
+    public void unlock(Long userId, Integer roomId) throws ServiceException {
+        //角色类型1：房主 2：主持 3：管理
+        List<Integer> roomUserRole = chatroomStaffService.getRoomUserRole(roomId, userId);
+        if (!(roomUserRole.contains(1) || roomUserRole.contains(2) || roomUserRole.contains(3))) {
+            throw new ServiceException(ResultCustomMessage.F1015);
+        }
         String key = RedisKeyConstants.CACHE_CHATROOM_LOCK_KEY;
         intRedisTemplate.opsForZSet().remove(key,roomId);
     }

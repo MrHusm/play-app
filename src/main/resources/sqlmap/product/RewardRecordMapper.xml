@@ -16,7 +16,7 @@
     <result column="receiver_income" property="receiverIncome" jdbcType="DECIMAL" />
     <result column="room_owner_income" property="roomOwnerIncome" jdbcType="DECIMAL" />
     <result column="platform_income" property="platformIncome" jdbcType="DECIMAL" />
-    <result column="pay_type" property="payType" jdbcType="BIT" />
+    <result column="pay_type" property="payType" jdbcType="INTEGER"/>
     <result column="creator" property="creator" jdbcType="BIGINT" />
     <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
   </resultMap>
@@ -49,8 +49,8 @@
     #{roomOwnerId,jdbcType=BIGINT}, #{roomId,jdbcType=INTEGER}, #{giftId,jdbcType=INTEGER},
     #{giftName,jdbcType=VARCHAR},
       #{giftNum,jdbcType=INTEGER}, #{giftPrice,jdbcType=DECIMAL}, #{giftTotalPrice,jdbcType=DECIMAL}, 
-      #{receiverIncome,jdbcType=DECIMAL}, #{roomOwnerIncome,jdbcType=DECIMAL}, #{platformIncome,jdbcType=DECIMAL}, 
-      #{payType,jdbcType=BIT}, #{creator,jdbcType=BIGINT}, #{createDate,jdbcType=TIMESTAMP}
+      #{receiverIncome,jdbcType=DECIMAL}, #{roomOwnerIncome,jdbcType=DECIMAL}, #{platformIncome,jdbcType=DECIMAL},
+    #{payType,jdbcType=INTEGER}, #{creator,jdbcType=BIGINT}, #{createDate,jdbcType=TIMESTAMP}
       )
   </insert>
   <insert id="insertBatch" parameterType="java.util.List">
@@ -68,7 +68,7 @@
       #{item.giftNum,jdbcType=INTEGER}, #{item.giftPrice,jdbcType=DECIMAL}, #{item.giftTotalPrice,jdbcType=DECIMAL},
       #{item.receiverIncome,jdbcType=DECIMAL}, #{item.roomOwnerIncome,jdbcType=DECIMAL},
       #{item.platformIncome,jdbcType=DECIMAL},
-      #{item.payType,jdbcType=BIT}, #{item.creator,jdbcType=BIGINT}, #{item.createDate,jdbcType=TIMESTAMP}
+      #{item.payType,jdbcType=INTEGER}, #{item.creator,jdbcType=BIGINT}, #{item.createDate,jdbcType=TIMESTAMP}
       )
     </foreach>
   </insert>
@@ -165,7 +165,7 @@
         #{platformIncome,jdbcType=DECIMAL},
       </if>
       <if test="payType != null" >
-        #{payType,jdbcType=BIT},
+        #{payType,jdbcType=INTEGER},
       </if>
       <if test="creator != null" >
         #{creator,jdbcType=BIGINT},
@@ -218,7 +218,7 @@
         platform_income = #{platformIncome,jdbcType=DECIMAL},
       </if>
       <if test="payType != null" >
-        pay_type = #{payType,jdbcType=BIT},
+        pay_type = #{payType,jdbcType=INTEGER},
       </if>
       <if test="creator != null" >
         creator = #{creator,jdbcType=BIGINT},
@@ -244,7 +244,7 @@
       receiver_income = #{receiverIncome,jdbcType=DECIMAL},
       room_owner_income = #{roomOwnerIncome,jdbcType=DECIMAL},
       platform_income = #{platformIncome,jdbcType=DECIMAL},
-      pay_type = #{payType,jdbcType=BIT},
+    pay_type = #{payType,jdbcType=INTEGER},
       creator = #{creator,jdbcType=BIGINT},
       create_date = #{createDate,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=BIGINT}

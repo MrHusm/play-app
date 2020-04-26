@@ -5,13 +5,14 @@
     <id column="id" property="id" jdbcType="INTEGER" />
     <result column="user_id" property="userId" jdbcType="BIGINT" />
     <result column="room_id" property="roomId" jdbcType="INTEGER" />
-    <result column="type" property="type" jdbcType="BIT" />
+    <result column="type" property="type" jdbcType="INTEGER"/>
     <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
     <result column="update_date" property="updateDate" jdbcType="TIMESTAMP" />
   </resultMap>
   <sql id="Base_Where">
     <if test="userId != null">and user_id= #{userId}</if>
     <if test="roomId != null">and room_id= #{roomId}</if>
+    <if test="type != null">and type= #{type}</if>
   </sql>
   <sql id="Base_Column_List">
     id, user_id, room_id, type, create_date, update_date
@@ -32,8 +33,8 @@
     </selectKey>
     insert into chatroom_staff (user_id, room_id, type, 
       create_date, update_date)
-    values (#{userId,jdbcType=BIGINT}, #{roomId,jdbcType=INTEGER}, #{type,jdbcType=BIT}, 
-      #{createDate,jdbcType=TIMESTAMP}, #{updateDate,jdbcType=TIMESTAMP})
+    values (#{userId,jdbcType=BIGINT}, #{roomId,jdbcType=INTEGER}, #{type,jdbcType=INTEGER},
+    #{createDate,jdbcType=TIMESTAMP}, #{updateDate,jdbcType=TIMESTAMP})
   </insert>
   <insert id="insertSelective" parameterType="com.play.im.model.ChatroomStaff" >
     <selectKey resultType="java.lang.Integer" keyProperty="id" order="AFTER" >
@@ -65,7 +66,7 @@
         #{roomId,jdbcType=INTEGER},
       </if>
       <if test="type != null" >
-        #{type,jdbcType=BIT},
+        #{type,jdbcType=INTEGER},
       </if>
       <if test="createDate != null" >
         #{createDate,jdbcType=TIMESTAMP},
@@ -85,7 +86,7 @@
         room_id = #{roomId,jdbcType=INTEGER},
       </if>
       <if test="type != null" >
-        type = #{type,jdbcType=BIT},
+        type = #{type,jdbcType=INTEGER},
       </if>
       <if test="createDate != null" >
         create_date = #{createDate,jdbcType=TIMESTAMP},
@@ -100,7 +101,7 @@
     update chatroom_staff
     set user_id = #{userId,jdbcType=BIGINT},
       room_id = #{roomId,jdbcType=INTEGER},
-      type = #{type,jdbcType=BIT},
+    type = #{type,jdbcType=INTEGER},
       create_date = #{createDate,jdbcType=TIMESTAMP},
       update_date = #{updateDate,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=INTEGER}

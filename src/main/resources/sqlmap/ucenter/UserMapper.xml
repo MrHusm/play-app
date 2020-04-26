@@ -18,7 +18,7 @@
         <result column="motto" property="motto" jdbcType="VARCHAR" />
         <result column="vip_level" property="vipLevel" jdbcType="TINYINT" />
         <result column="vip_exp" property="vipExp" jdbcType="INTEGER" />
-        <result column="freeze" property="freeze" jdbcType="BIT" />
+        <result column="freeze" property="freeze" jdbcType="INTEGER"/>
         <result column="freeze_expire_time" property="freezeExpireTime" jdbcType="TIMESTAMP" />
         <result column="app_version" property="appVersion" jdbcType="VARCHAR" />
         <result column="device_type" property="deviceType" jdbcType="TINYINT" />
@@ -27,7 +27,7 @@
         <result column="bundle_id" property="bundleId" jdbcType="VARCHAR" />
         <result column="os_version" property="osVersion" jdbcType="VARCHAR" />
         <result column="channel" property="channel" jdbcType="INTEGER" />
-        <result column="deleted" property="deleted" jdbcType="BIT" />
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
         <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
         <result column="update_date" property="updateDate" jdbcType="TIMESTAMP" />
     </resultMap>
@@ -67,10 +67,10 @@
         #{headUrl,jdbcType=VARCHAR},#{pendHeadUrl,jdbcType=VARCHAR},
         #{headwearUrl,jdbcType=VARCHAR}, #{sex,jdbcType=TINYINT}, #{birthday,jdbcType=DATE},
         #{province,jdbcType=VARCHAR}, #{city,jdbcType=VARCHAR}, #{motto,jdbcType=VARCHAR},
-        #{vipLevel,jdbcType=TINYINT}, #{vipExp,jdbcType=INTEGER}, #{freeze,jdbcType=BIT},
+        #{vipLevel,jdbcType=TINYINT}, #{vipExp,jdbcType=INTEGER}, #{freeze,jdbcType=INTEGER},
         #{freezeExpireTime,jdbcType=TIMESTAMP}, #{appVersion,jdbcType=VARCHAR}, #{deviceType,jdbcType=TINYINT},
         #{deviceImei,jdbcType=VARCHAR}, #{deviceName,jdbcType=VARCHAR}, #{bundleId,jdbcType=VARCHAR},
-        #{osVersion,jdbcType=VARCHAR}, #{channel,jdbcType=INTEGER}, #{deleted,jdbcType=BIT},
+        #{osVersion,jdbcType=VARCHAR}, #{channel,jdbcType=INTEGER}, #{deleted,jdbcType=INTEGER},
         #{createDate,jdbcType=TIMESTAMP}, #{updateDate,jdbcType=TIMESTAMP})
     </insert>
     <insert id="insertSelective" parameterType="com.play.ucenter.model.User">
@@ -205,7 +205,7 @@
                 #{vipExp,jdbcType=INTEGER},
             </if>
             <if test="freeze != null" >
-                #{freeze,jdbcType=BIT},
+                #{freeze,jdbcType=INTEGER},
             </if>
             <if test="freezeExpireTime != null" >
                 #{freezeExpireTime,jdbcType=TIMESTAMP},
@@ -232,7 +232,7 @@
                 #{channel,jdbcType=INTEGER},
             </if>
             <if test="deleted != null" >
-                #{deleted,jdbcType=BIT},
+                #{deleted,jdbcType=INTEGER},
             </if>
             <if test="createDate != null" >
                 #{createDate,jdbcType=TIMESTAMP},
@@ -288,7 +288,7 @@
                 vip_exp = #{vipExp,jdbcType=INTEGER},
             </if>
             <if test="freeze != null" >
-                freeze = #{freeze,jdbcType=BIT},
+                freeze = #{freeze,jdbcType=INTEGER},
             </if>
             <if test="freezeExpireTime != null" >
                 freeze_expire_time = #{freezeExpireTime,jdbcType=TIMESTAMP},
@@ -315,7 +315,7 @@
                 channel = #{channel,jdbcType=INTEGER},
             </if>
             <if test="deleted != null" >
-                deleted = #{deleted,jdbcType=BIT},
+                deleted = #{deleted,jdbcType=INTEGER},
             </if>
             <if test="createDate != null" >
                 create_date = #{createDate,jdbcType=TIMESTAMP},
@@ -343,7 +343,7 @@
         motto = #{motto,jdbcType=VARCHAR},
         vip_level = #{vipLevel,jdbcType=TINYINT},
         vip_exp = #{vipExp,jdbcType=INTEGER},
-        freeze = #{freeze,jdbcType=BIT},
+        freeze = #{freeze,jdbcType=INTEGER},
         freeze_expire_time = #{freezeExpireTime,jdbcType=TIMESTAMP},
         app_version = #{appVersion,jdbcType=VARCHAR},
         device_type = #{deviceType,jdbcType=TINYINT},
@@ -352,7 +352,7 @@
         bundle_id = #{bundleId,jdbcType=VARCHAR},
         os_version = #{osVersion,jdbcType=VARCHAR},
         channel = #{channel,jdbcType=INTEGER},
-        deleted = #{deleted,jdbcType=BIT},
+        deleted = #{deleted,jdbcType=INTEGER},
         create_date = #{createDate,jdbcType=TIMESTAMP},
         update_date = #{updateDate,jdbcType=TIMESTAMP}
         where id = #{id,jdbcType=BIGINT}

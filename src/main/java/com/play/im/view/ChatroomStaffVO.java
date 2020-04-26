@@ -1,7 +1,6 @@
 package com.play.im.view;
 
 public class ChatroomStaffVO {
-    private Integer id;
 
     private Integer roomId;
 
@@ -21,13 +20,15 @@ public class ChatroomStaffVO {
      */
     private String headUrl;
 
-    public Integer getId() {
-        return id;
-    }
+    /**
+     * 性别 0：未知 1：男 2：女
+     */
+    private Integer sex;
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
+    /**
+     * vip等级
+     */
+    private Integer vipLevel;
 
     public Integer getRoomId() {
         return roomId;
@@ -67,5 +68,21 @@ public class ChatroomStaffVO {
 
     public void setHeadUrl(String headUrl) {
         this.headUrl = headUrl;
+    }
+
+    public Integer getSex() {
+        return sex;
+    }
+
+    public void setSex(Integer sex) {
+        this.sex = sex;
+    }
+
+    public Integer getVipLevel() {
+        return vipLevel;
+    }
+
+    public void setVipLevel(Integer vipLevel) {
+        this.vipLevel = vipLevel;
     }
 }

@@ -5,16 +5,16 @@
     <id column="id" property="id" jdbcType="INTEGER" />
     <result column="room_id" property="roomId" jdbcType="INTEGER" />
     <result column="name" property="name" jdbcType="VARCHAR" />
-    <result column="type" property="type" jdbcType="BIT" />
+    <result column="type" property="type" jdbcType="INTEGER"/>
     <result column="img_url" property="imgUrl" jdbcType="VARCHAR" />
     <result column="bg_img_url" property="bgImgUrl" jdbcType="VARCHAR" />
     <result column="notice" property="notice" jdbcType="VARCHAR" />
     <result column="slogan" property="slogan" jdbcType="VARCHAR" />
-    <result column="status" property="status" jdbcType="BIT" />
+    <result column="status" property="status" jdbcType="INTEGER"/>
     <result column="ownner_id" property="ownnerId" jdbcType="BIGINT" />
-    <result column="display_heart" property="displayHeart" jdbcType="BIT" />
-    <result column="tag_type" property="tagType" jdbcType="BIT" />
-    <result column="mic_type" property="micType" jdbcType="BIT" />
+    <result column="display_heart" property="displayHeart" jdbcType="INTEGER"/>
+    <result column="tag_type" property="tagType" jdbcType="INTEGER"/>
+    <result column="mic_type" property="micType" jdbcType="INTEGER"/>
     <result column="guild_id" property="guildId" jdbcType="INTEGER" />
     <result column="update_date" property="updateDate" jdbcType="TIMESTAMP" />
     <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
@@ -48,11 +48,11 @@
       display_heart, tag_type, mic_type, 
       guild_id, update_date, create_date
       )
-    values (#{roomId,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{type,jdbcType=BIT}, 
-      #{imgUrl,jdbcType=VARCHAR}, #{bgImgUrl,jdbcType=VARCHAR}, #{notice,jdbcType=VARCHAR}, 
-      #{slogan,jdbcType=VARCHAR}, #{status,jdbcType=BIT}, #{ownnerId,jdbcType=BIGINT}, 
-      #{displayHeart,jdbcType=BIT}, #{tagType,jdbcType=BIT}, #{micType,jdbcType=BIT}, 
-      #{guildId,jdbcType=INTEGER}, #{updateDate,jdbcType=TIMESTAMP}, #{createDate,jdbcType=TIMESTAMP}
+    values (#{roomId,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{type,jdbcType=INTEGER},
+    #{imgUrl,jdbcType=VARCHAR}, #{bgImgUrl,jdbcType=VARCHAR}, #{notice,jdbcType=VARCHAR},
+    #{slogan,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER}, #{ownnerId,jdbcType=BIGINT},
+    #{displayHeart,jdbcType=INTEGER}, #{tagType,jdbcType=INTEGER}, #{micType,jdbcType=INTEGER},
+    #{guildId,jdbcType=INTEGER}, #{updateDate,jdbcType=TIMESTAMP}, #{createDate,jdbcType=TIMESTAMP}
       )
   </insert>
   <insert id="insertSelective" parameterType="com.play.im.model.Chatroom" >
@@ -115,7 +115,7 @@
         #{name,jdbcType=VARCHAR},
       </if>
       <if test="type != null" >
-        #{type,jdbcType=BIT},
+        #{type,jdbcType=INTEGER},
       </if>
       <if test="imgUrl != null" >
         #{imgUrl,jdbcType=VARCHAR},
@@ -130,19 +130,19 @@
         #{slogan,jdbcType=VARCHAR},
       </if>
       <if test="status != null" >
-        #{status,jdbcType=BIT},
+        #{status,jdbcType=INTEGER},
       </if>
       <if test="ownnerId != null" >
         #{ownnerId,jdbcType=BIGINT},
       </if>
       <if test="displayHeart != null" >
-        #{displayHeart,jdbcType=BIT},
+        #{displayHeart,jdbcType=INTEGER},
       </if>
       <if test="tagType != null" >
-        #{tagType,jdbcType=BIT},
+        #{tagType,jdbcType=INTEGER},
       </if>
       <if test="micType != null" >
-        #{micType,jdbcType=BIT},
+        #{micType,jdbcType=INTEGER},
       </if>
       <if test="guildId != null" >
         #{guildId,jdbcType=INTEGER},
@@ -158,14 +158,11 @@
   <update id="updateByPrimaryKeySelective" parameterType="com.play.im.model.Chatroom" >
     update chatroom
     <set >
-      <if test="roomId != null" >
-        room_id = #{roomId,jdbcType=INTEGER},
-      </if>
       <if test="name != null" >
         name = #{name,jdbcType=VARCHAR},
       </if>
       <if test="type != null" >
-        type = #{type,jdbcType=BIT},
+        type = #{type,jdbcType=INTEGER},
       </if>
       <if test="imgUrl != null" >
         img_url = #{imgUrl,jdbcType=VARCHAR},
@@ -180,19 +177,19 @@
         slogan = #{slogan,jdbcType=VARCHAR},
       </if>
       <if test="status != null" >
-        status = #{status,jdbcType=BIT},
+        status = #{status,jdbcType=INTEGER},
       </if>
       <if test="ownnerId != null" >
         ownner_id = #{ownnerId,jdbcType=BIGINT},
       </if>
       <if test="displayHeart != null" >
-        display_heart = #{displayHeart,jdbcType=BIT},
+        display_heart = #{displayHeart,jdbcType=INTEGER},
       </if>
       <if test="tagType != null" >
-        tag_type = #{tagType,jdbcType=BIT},
+        tag_type = #{tagType,jdbcType=INTEGER},
       </if>
       <if test="micType != null" >
-        mic_type = #{micType,jdbcType=BIT},
+        mic_type = #{micType,jdbcType=INTEGER},
       </if>
       <if test="guildId != null" >
         guild_id = #{guildId,jdbcType=INTEGER},
@@ -210,16 +207,16 @@
     update chatroom
     set room_id = #{roomId,jdbcType=INTEGER},
       name = #{name,jdbcType=VARCHAR},
-      type = #{type,jdbcType=BIT},
+    type = #{type,jdbcType=INTEGER},
       img_url = #{imgUrl,jdbcType=VARCHAR},
       bg_img_url = #{bgImgUrl,jdbcType=VARCHAR},
       notice = #{notice,jdbcType=VARCHAR},
       slogan = #{slogan,jdbcType=VARCHAR},
-      status = #{status,jdbcType=BIT},
+    status = #{status,jdbcType=INTEGER},
       ownner_id = #{ownnerId,jdbcType=BIGINT},
-      display_heart = #{displayHeart,jdbcType=BIT},
-      tag_type = #{tagType,jdbcType=BIT},
-      mic_type = #{micType,jdbcType=BIT},
+    display_heart = #{displayHeart,jdbcType=INTEGER},
+    tag_type = #{tagType,jdbcType=INTEGER},
+    mic_type = #{micType,jdbcType=INTEGER},
       guild_id = #{guildId,jdbcType=INTEGER},
       update_date = #{updateDate,jdbcType=TIMESTAMP},
       create_date = #{createDate,jdbcType=TIMESTAMP}
@@ -244,6 +241,6 @@
   </select>
 
   <update id="updateRoomStatus" parameterType="map" >
-    update chatroom set status = #{status,jdbcType=BIT} where room_id = #{roomId,jdbcType=INTEGER}
+    update chatroom set status = #{status,jdbcType=INTEGER} where room_id = #{roomId,jdbcType=INTEGER}
   </update>
 </mapper>
