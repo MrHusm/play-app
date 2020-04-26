@@ -21,6 +21,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -94,6 +95,7 @@ public class GiftServiceImpl extends BaseServiceImpl<Gift, Integer> implements I
         return list;
     }
 
+    @Transactional
     @Override
     public void sendGift(Long userId, Integer roomId, Integer giftId, Integer giftNum, List<Long> targetUserIds, List<Integer> positions, Integer payType) throws ServiceException {
         GiftVO gift = this.getById(giftId);
@@ -154,7 +156,7 @@ public class GiftServiceImpl extends BaseServiceImpl<Gift, Integer> implements I
         message.setOrderNo(orderNo);
         message.setPayType(payType);
         message.setSendDate(sendDate);
-        amqpTemplate.convertAndSend("queueGiftKey",message);
+        amqpTemplate.convertAndSend("queueGiftKey", JSON.toJSONString(message));
 
         //发送礼物消息 TODO
 

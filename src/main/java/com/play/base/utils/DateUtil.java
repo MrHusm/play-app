@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * @author hushengmeng
@@ -389,5 +390,15 @@ public class DateUtil {
             return 1;
         }
         return dayOfWeekChina + 1;
+    }
+
+    public static Integer getWeekByDate(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.setFirstDayOfWeek(2);
+        TimeZone time = TimeZone.getTimeZone("GMT+8");
+        cal.setTimeZone(time);
+        Integer week = cal.get(3);
+        return week;
     }
 }

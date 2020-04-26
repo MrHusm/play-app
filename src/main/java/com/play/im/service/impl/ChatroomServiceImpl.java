@@ -604,7 +604,7 @@ public class ChatroomServiceImpl extends BaseServiceImpl<Chatroom, Long> impleme
         //查询月榜 周榜 日榜记录的key
         //月榜
         Date date = new Date();
-        Integer week = DateUtil.getWeek(date);
+        Integer week = DateUtil.getWeekByDate(date);
         String day = DateUtil.format(date,"yyyyMMdd");
         String month = DateUtil.format(date,"yyyyMM");
         String year = DateUtil.format(date,"yyyy");
