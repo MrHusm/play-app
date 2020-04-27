@@ -16,7 +16,7 @@ public interface IUserAccountDao extends IBaseDao<UserAccount> {
      * @param userId
      * @param amount
      */
-    int giftPay(Long userId, BigDecimal amount);
+    int silverPay(Long userId, BigDecimal amount);
 
     /**
      * 收到礼物
@@ -24,5 +24,14 @@ public interface IUserAccountDao extends IBaseDao<UserAccount> {
      * @param amount
      * @return
      */
-    int giftReceive(Long userId, BigDecimal amount);
+    int addGold(Long userId, BigDecimal amount);
+
+    /**
+     * 兑换
+     *
+     * @param userId
+     * @param amount
+     * @return
+     */
+    int exchange(Long userId, BigDecimal amount);
 }

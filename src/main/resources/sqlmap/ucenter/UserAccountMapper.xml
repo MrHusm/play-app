@@ -104,12 +104,18 @@
     from user_account where 1=1
     <include refid="Base_Where" />
   </select>
-  <update id="giftPay" parameterType="map">
+  <update id="silverPay" parameterType="map">
     update user_account set silver_amount = silver_amount-#{amount,jdbcType=DECIMAL} where user_id =
     #{userId,jdbcType=BIGINT} <![CDATA[ and silver_amount >= #{amount,jdbcType=DECIMAL} ]]>
   </update>
 
-  <update id="giftReceive" parameterType="map">
+  <update id="addGold" parameterType="map">
     update user_account set gold_amount = gold_amount+#{amount,jdbcType=DECIMAL} where user_id = #{userId,jdbcType=BIGINT}
+  </update>
+
+  <update id="exchange" parameterType="map">
+    update user_account set silver_amount = silver_amount+#{amount,jdbcType=DECIMAL},
+    gold_amount = gold_amount-#{amount,jdbcType=DECIMAL} where user_id =
+    #{userId,jdbcType=BIGINT} <![CDATA[ and gold_amount >= #{amount,jdbcType=DECIMAL} ]]>
   </update>
 </mapper>

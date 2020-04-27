@@ -1,6 +1,7 @@
 package com.play.ucenter.service;
 
 
+import com.play.base.exception.ServiceException;
 import com.play.base.service.IBaseService;
 import com.play.ucenter.model.UserAccount;
 
@@ -24,13 +25,39 @@ public interface IUserAccountService extends IBaseService<UserAccount,Long> {
      * @param userId
      * @param totalPrice
      */
-    int giftPay(Long userId, BigDecimal totalPrice);
+    int silverPay(Long userId, BigDecimal totalPrice);
 
     /**
      * 收到礼物
+     *
      * @param userId
      * @param amount
      * @return
      */
-    int giftReceive(Long userId, BigDecimal amount);
+    int addGold(Long userId, BigDecimal amount);
+
+    /**
+     * 转账
+     *
+     * @param userId
+     * @param targetUserId
+     * @param amount
+     */
+    void transferAccount(Long userId, Long targetUserId, BigDecimal amount) throws ServiceException;
+
+    /**
+     * 用户兑换
+     *
+     * @param userId
+     * @param amount
+     */
+    void exchange(Long userId, BigDecimal amount) throws ServiceException;
+
+    /**
+     * 管理员充值
+     *
+     * @param userId
+     * @param amount
+     */
+    void adminRecharge(Long userId, Long targetUserId, BigDecimal amount) throws ServiceException;
 }

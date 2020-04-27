@@ -15,18 +15,26 @@ import java.util.Map;
 @Repository(value="userAccountDao")
 public class UserAccountDaoImpl extends BaseDaoImpl<UserAccount> implements IUserAccountDao {
     @Override
-    public int giftPay(Long userId, BigDecimal amount) {
+    public int silverPay(Long userId, BigDecimal amount) {
         Map<String, Object> param = new HashMap<String, Object>();
         param.put("userId", userId);
         param.put("amount", amount);
-        return this.update("UserAccountMapper.giftPay", param);
+        return this.update("UserAccountMapper.silverPay", param);
     }
 
     @Override
-    public int giftReceive(Long userId, BigDecimal amount) {
+    public int addGold(Long userId, BigDecimal amount) {
         Map<String, Object> param = new HashMap<String, Object>();
         param.put("userId", userId);
         param.put("amount", amount);
-        return this.update("UserAccountMapper.giftReceive", param);
+        return this.update("UserAccountMapper.addGold", param);
+    }
+
+    @Override
+    public int exchange(Long userId, BigDecimal amount) {
+        Map<String, Object> param = new HashMap<String, Object>();
+        param.put("userId", userId);
+        param.put("amount", amount);
+        return this.update("UserAccountMapper.exchange", param);
     }
 }

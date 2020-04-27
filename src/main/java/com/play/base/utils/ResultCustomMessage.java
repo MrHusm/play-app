@@ -36,4 +36,8 @@ public class ResultCustomMessage extends ResultMessage{
     public static final ResultCustomMessage F1014 = new ResultCustomMessage(1014, "编号池足够大");
 
     public static final ResultCustomMessage F1015 = new ResultCustomMessage(1015, "权限不足");
+
+    public static final ResultCustomMessage F1016 = new ResultCustomMessage(1016, "目标用户不存在");
+
+    public static final ResultCustomMessage F1017 = new ResultCustomMessage(1017, "非法操作");
 }

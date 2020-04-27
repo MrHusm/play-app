@@ -112,7 +112,7 @@ public class GiftListener implements ChannelAwareMessageListener {
             //增加收礼人、工会、平台收益和记录
             for (Long targetUserId : targetUserIds) {
                 //接收人增加收益
-                userAccountService.giftReceive(targetUserId, gift.getPrice().multiply(BigDecimal.valueOf(giftNum)).multiply(BigDecimal.valueOf(0.7)).setScale(2, BigDecimal.ROUND_HALF_UP));
+                userAccountService.addGold(targetUserId, gift.getPrice().multiply(BigDecimal.valueOf(giftNum)).multiply(BigDecimal.valueOf(0.7)).setScale(2, BigDecimal.ROUND_HALF_UP));
                 //保存账户交易记录
                 TradeRecord receiveTradeRecord = new TradeRecord();
                 receiveTradeRecord.setOrderNo(orderNo);
@@ -126,7 +126,7 @@ public class GiftListener implements ChannelAwareMessageListener {
                 tradeRecordService.save(receiveTradeRecord);
 
                 //公会增加收益
-                userAccountService.giftReceive(chatroom.getOwnnerId(), gift.getPrice().multiply(BigDecimal.valueOf(giftNum)).multiply(BigDecimal.valueOf(0.1)).setScale(2, BigDecimal.ROUND_HALF_UP));
+                userAccountService.addGold(chatroom.getOwnnerId(), gift.getPrice().multiply(BigDecimal.valueOf(giftNum)).multiply(BigDecimal.valueOf(0.1)).setScale(2, BigDecimal.ROUND_HALF_UP));
                 //保存账户交易记录
                 TradeRecord ownnerTradeRecord = new TradeRecord();
                 ownnerTradeRecord.setOrderNo(orderNo);
@@ -140,7 +140,7 @@ public class GiftListener implements ChannelAwareMessageListener {
                 tradeRecordService.save(ownnerTradeRecord);
 
                 //平台增加收益
-                userAccountService.giftReceive(platformUserId, gift.getPrice().multiply(BigDecimal.valueOf(giftNum)).multiply(BigDecimal.valueOf(0.1)).setScale(2, BigDecimal.ROUND_HALF_UP));
+                userAccountService.addGold(platformUserId, gift.getPrice().multiply(BigDecimal.valueOf(giftNum)).multiply(BigDecimal.valueOf(0.1)).setScale(2, BigDecimal.ROUND_HALF_UP));
                 //保存账户交易记录
                 TradeRecord platformTradeRecord = new TradeRecord();
                 platformTradeRecord.setOrderNo(orderNo);

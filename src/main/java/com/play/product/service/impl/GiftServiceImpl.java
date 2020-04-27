@@ -112,7 +112,7 @@ public class GiftServiceImpl extends BaseServiceImpl<Gift, Integer> implements I
                 throw new ServiceException(ResultCustomMessage.F1012);
             }
             //扣除银币
-            int updateStatus = userAccountService.giftPay(userId, amount);
+            int updateStatus = userAccountService.silverPay(userId, amount);
             if (updateStatus != 1) {
                 //扣除失败
                 throw new ServiceException(ResultCustomMessage.F1012);
