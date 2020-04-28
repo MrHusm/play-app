@@ -14,6 +14,8 @@
   </resultMap>
   <sql id="Base_Where">
     <if test="userId != null"> and user_id= #{userId}</if>
+    <if test="status == 0"><![CDATA[ and type >= 0 ]]></if>
+    <if test="status == 1"><![CDATA[ and type < 0 ]]></if>
   </sql>
   <sql id="Base_Column_List" >
     id, order_no, user_id, type, account_type, trade_time, amount, creator, create_date
