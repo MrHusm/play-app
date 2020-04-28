@@ -76,5 +76,7 @@ public class RedisKeyConstants {
     public final static String CACHE_CHATROOM_RANK_RECEIVE_MONTH_KEY = "chatroom_rank_receive_day_%d_%s";
     //魅力总月榜key
     public final static String CACHE_RANK_RECEIVE_MONTH_KEY = "rank_receive_month_%s";
+    //充值信息key
+    public final static String CACHE_RECHARGE_ITEM_LIST_KEY = "recharge_item_list_type_%d";
 
 }

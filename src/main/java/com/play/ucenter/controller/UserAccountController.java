@@ -93,7 +93,7 @@ public class UserAccountController extends BaseController {
     /**
      * 账户相关记录
      *
-     * @param type 0:收入 1：支出
+     * @param type 0：收入 1：支出
      * @return
      */
     @ResponseBody

@@ -40,4 +40,6 @@ public class ResultCustomMessage extends ResultMessage{
     public static final ResultCustomMessage F1016 = new ResultCustomMessage(1016, "目标用户不存在");
 
     public static final ResultCustomMessage F1017 = new ResultCustomMessage(1017, "非法操作");
+
+    public static final ResultCustomMessage F1018 = new ResultCustomMessage(1018, "支付失败，请稍后重试");
 }
